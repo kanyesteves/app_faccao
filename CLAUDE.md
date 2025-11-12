@@ -1,0 +1,6 @@
+- Vou usar esse diretório para criar o front-end do aplicativo que vou criar para costureiras e faccionistas.
+- Quando comerçar o projeto quero que você se baseie na arquitetura de pastas do projeto que foi feito no diretório /Users/kanydianesteves/projetos/volatex2/volatex_vue/
+- Quero que você acesse o packege.json do projeto /Users/kanydianesteves/projetos/volatex2/volatex_vue/ para instalar as mesmas dependências utilizadas naquele projeto.
+- Contexto da aplicação: Estou criando um app para ajudar costureiras autonomas e faccionistas a gerir suas prodoções. No momento o app vai ser bem simples. Vou usar o supabase nesse projeto para facilitar e agilizar o MVP.
+- Tabelas do banco de dados: users, organization, customer, lot, type_service, reference.
+- Esse projeto vai ser em multy-tenant. Eu vou ter um banco para todos os usuários/clientes. Cada usuário vai ter uma organização e vai poder ver somente as tabelas referente a sua organização. Em todas as tabelas eu criei uma chave estrangeira para isso seguir correto.
