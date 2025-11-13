@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <h1>App Facção</h1>
+    <h1>Noro App</h1>
     <p>Sistema para gerenciamento de costureiras e faccionistas</p>
   </div>
 </template>
