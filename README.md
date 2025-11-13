@@ -132,16 +132,17 @@ Em desenvolvimento - MVP
 ## 📝 Próximas Features
 
 - [ ] Implementar autenticação com Supabase
-- [ ] Telas de cadastro de costureiras
-- [ ] Telas de cadastro de faccionistas
+- [ ] Telas de cadastro de lotes
+- [ ] Telas de cadastro de referências
+- [ ] Telas de cadastro de tipos de serviços
+- [ ] Telas de cadastro de clientes
+- [ ] Telas de ajutes da organização
 - [ ] Sistema de gerenciamento de lotes
-- [ ] Sistema de pedidos
-- [ ] Dashboard com métricas
-- [ ] Relatórios de produção
+- [ ] Dashboard com métricas e indicadores
 
 ## 👨‍💻 Autor
 
-Kanye Diane Steves
+Kanydian Esteves
 
 ## 📄 Licença
 
