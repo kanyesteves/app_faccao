@@ -34,6 +34,8 @@
             label="Entrar"
             class="w-full"
             severity="help"
+            :loading="loading"
+            :disabled="loading"
           />
 
           <div class="text-center mt-3">
@@ -49,10 +51,13 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
+import { useRouter } from 'vue-router';
+import { useToast } from 'primevue/usetoast';
 import Card from 'primevue/card';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import Button from 'primevue/button';
+import { useAuth } from '@/composables/useAuth';
 
 export default defineComponent({
   name: 'LoginView',
@@ -63,22 +68,68 @@ export default defineComponent({
     Button
   },
   setup() {
+    const router = useRouter();
+    const toast = useToast();
+    const { login, loading, error } = useAuth();
+
     const email = ref('');
     const password = ref('');
 
-    const handleLogin = () => {
-      console.log('Login:', email.value, password.value);
-      // Lógica de autenticação será implementada aqui
+    /**
+     * Faz login do usuário
+     */
+    const handleLogin = async () => {
+      // Validação básica
+      if (!email.value || !password.value) {
+        toast.add({
+          severity: 'warn',
+          summary: 'Atenção',
+          detail: 'Preencha email e senha',
+          life: 3000
+        });
+        return;
+      }
+
+      // Tenta fazer login
+      const result = await login({
+        email: email.value,
+        password: password.value
+      });
+
+      if (result.success) {
+        toast.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Login realizado com sucesso!',
+          life: 3000
+        });
+
+        // Redireciona para a home
+        router.push({ name: 'home' });
+      } else {
+        toast.add({
+          severity: 'error',
+          summary: 'Erro ao fazer login',
+          detail: result.error || 'Verifique suas credenciais e tente novamente',
+          life: 5000
+        });
+      }
     };
 
     const handleRegister = () => {
-      console.log('Ir para registro');
-      // Navegação para tela de registro será implementada aqui
+      toast.add({
+        severity: 'info',
+        summary: 'Informação',
+        detail: 'Funcionalidade de registro não disponível',
+        life: 3000
+      });
     };
 
     return {
       email,
       password,
+      loading,
+      error,
       handleLogin,
       handleRegister
     };

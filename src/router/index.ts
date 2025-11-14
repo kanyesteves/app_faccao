@@ -1,16 +1,18 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router'
+import { useAuthStore } from '@/stores/authStore'
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'home',
     component: () => import(/* webpackChunkName: "home" */ '../views/HomeView.vue'),
-    // meta: { requiresAuth: true }
+    meta: { requiresAuth: true }
   },
   {
     path: '/login',
     name: 'login',
-    component: () => import(/* webpackChunkName: "login" */ '../views/LoginView.vue')
+    component: () => import(/* webpackChunkName: "login" */ '../views/LoginView.vue'),
+    meta: { requiresAuth: false }
   },
 ]
 
@@ -19,18 +21,30 @@ const router = createRouter({
   routes
 })
 
-router.beforeEach((to: any, from: any, next: any) => {
-  const token = localStorage.getItem('token')
+/**
+ * Guard de autenticação
+ * Protege rotas que requerem autenticação
+ * Redireciona para login se não estiver autenticado
+ * Redireciona para home se já estiver autenticado e tentar acessar login
+ */
+router.beforeEach((to, from, next) => {
+  const authStore = useAuthStore()
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
 
-  if (to.matched.some((record: any) => record.meta.requiresAuth)) {
-
-    if (!token) {
+  if (requiresAuth) {
+    // Se a rota requer autenticação, verifica se está autenticado
+    if (!authStore.isAuthenticated) {
       next({ name: 'login' })
     } else {
       next()
     }
   } else {
-    next()
+    // Se é a rota de login e já está autenticado, redireciona para home
+    if (to.name === 'login' && authStore.isAuthenticated) {
+      next({ name: 'home' })
+    } else {
+      next()
+    }
   }
 })
 

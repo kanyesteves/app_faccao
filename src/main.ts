@@ -8,6 +8,7 @@ import Ripple from 'primevue/ripple';
 import Tooltip from 'primevue/tooltip';
 import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
+import { useAuthStore } from './stores/authStore';
 
 import 'primeicons/primeicons.css'
 
@@ -35,6 +36,11 @@ app.directive('tooltip', Tooltip);
 app.use(ConfirmationService);
 app.use(ToastService);
 app.use(PrimeVue)
-app.use(router)
 app.use(pinia);
+app.use(router)
+
+// Inicializa a auth store depois do pinia
+const authStore = useAuthStore()
+authStore.initialize()
+
 app.mount('#app')
