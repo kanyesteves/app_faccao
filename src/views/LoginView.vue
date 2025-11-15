@@ -90,22 +90,14 @@ export default defineComponent({
         return;
       }
 
-      // Tenta fazer login
       const result = await login({
         email: email.value,
         password: password.value
       });
 
       if (result.success) {
-        toast.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: 'Login realizado com sucesso!',
-          life: 3000
-        });
-
-        // Redireciona para a home
         router.push({ name: 'home' });
+
       } else {
         toast.add({
           severity: 'error',

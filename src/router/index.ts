@@ -14,6 +14,42 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import(/* webpackChunkName: "login" */ '../views/LoginView.vue'),
     meta: { requiresAuth: false }
   },
+  {
+    path: '/references',
+    name: 'references',
+    component: () => import(/* webpackChunkName: "references" */ '../views/ReferenceView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/customers',
+    name: 'customers',
+    component: () => import(/* webpackChunkName: "customers" */ '../views/CustomerView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/lots',
+    name: 'lots',
+    component: () => import(/* webpackChunkName: "lots" */ '../views/LotView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/type-services',
+    name: 'type-services',
+    component: () => import(/* webpackChunkName: "type-services" */ '../views/TypeServiceView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/users',
+    name: 'users',
+    component: () => import(/* webpackChunkName: "users" */ '../views/UserView.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/organization',
+    name: 'organization',
+    component: () => import(/* webpackChunkName: "organization" */ '../views/OrganizationView.vue'),
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({

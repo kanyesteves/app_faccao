@@ -1,29 +1,21 @@
 <template>
-  <div class="home">
+  <div class="organization-view">
     <div class="header-navbar">
       <NavbarMenu />
     </div>
-    <div class="home-content">
-      <h1>Noro App</h1>
-      <p>Aplicativo de gestão de produção para costureiras e faccionistas</p>
+    <div class="content">
+      <h1>Organização</h1>
     </div>
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import NavbarMenu from '@/global/components/NavbarMenu.vue';
-
-export default defineComponent({
-  name: 'HomeView',
-  components: {
-    NavbarMenu
-  }
-});
+<script setup lang="ts">
+import NavbarMenu from '@/global/components/NavbarMenu.vue'
+// Componente será implementado posteriormente
 </script>
 
-<style scoped>
-.home {
+<style scoped lang="scss">
+.organization-view {
   padding: 0;
 }
 
@@ -40,7 +32,7 @@ export default defineComponent({
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.home-content {
+.content {
   padding: 2rem;
   margin-top: 60px;
 }
