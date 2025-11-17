@@ -38,12 +38,12 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import(/* webpackChunkName: "type-services" */ '../views/TypeServiceView.vue'),
     meta: { requiresAuth: true }
   },
-  {
-    path: '/users',
-    name: 'users',
-    component: () => import(/* webpackChunkName: "users" */ '../views/UserView.vue'),
-    meta: { requiresAuth: true }
-  },
+  // { Será implentado em outra feature !!
+  //   path: '/users',
+  //   name: 'users',
+  //   component: () => import(/* webpackChunkName: "users" */ '../views/UserView.vue'),
+  //   meta: { requiresAuth: true }
+  // },
   {
     path: '/organization',
     name: 'organization',
@@ -63,9 +63,14 @@ const router = createRouter({
  * Redireciona para login se não estiver autenticado
  * Redireciona para home se já estiver autenticado e tentar acessar login
  */
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth)
+
+  // Aguarda verificação de autenticação se ainda estiver carregando
+  if (authStore.loading) {
+    await authStore.checkAuth()
+  }
 
   if (requiresAuth) {
     // Se a rota requer autenticação, verifica se está autenticado

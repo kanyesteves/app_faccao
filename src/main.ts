@@ -39,8 +39,12 @@ app.use(PrimeVue)
 app.use(pinia);
 app.use(router)
 
-// Inicializa a auth store depois do pinia
+// Inicializa a auth store e aguarda verificação de sessão antes de montar o app
 const authStore = useAuthStore()
 authStore.initialize()
 
-app.mount('#app')
+// Aguarda a verificação inicial da autenticação antes de montar o app
+// Isso garante que a sessão seja restaurada do localStorage antes do router guard executar
+authStore.checkAuth().then(() => {
+  app.mount('#app')
+})

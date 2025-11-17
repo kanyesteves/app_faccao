@@ -14,7 +14,7 @@
       <div class="navbar-content">
         <!-- Logo/Header -->
         <div class="navbar-header">
-          <h3>App Facção</h3>
+          <h3>Noro App</h3>
         </div>
 
         <!-- Menu Items -->
@@ -64,14 +64,14 @@
             <span>Tipos de Serviço</span>
           </router-link>
 
-          <router-link
+          <!-- <router-link
             to="/users"
             class="menu-item"
             @click="visible = false"
           >
             <i class="pi pi-user"></i>
             <span>Usuários</span>
-          </router-link>
+          </router-link> -->
 
           <router-link
             to="/organization"

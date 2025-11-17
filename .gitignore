@@ -1,6 +1,8 @@
 .DS_Store
 node_modules
 /dist
+CLAUDE.md
+bugs.md
 
 # local env files
 .env

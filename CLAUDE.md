@@ -4,3 +4,4 @@
 - Contexto da aplicação: Estou criando um app para ajudar costureiras autonomas e faccionistas a gerir suas prodoções. No momento o app vai ser bem simples. Vou usar o supabase nesse projeto para facilitar e agilizar o MVP.
 - Tabelas do banco de dados: users, organization, customer, lot, type_service, reference.
 - Esse projeto vai ser em multy-tenant. Eu vou ter um banco para todos os usuários/clientes. Cada usuário vai ter uma organização e vai poder ver somente as tabelas referente a sua organização. Em todas as tabelas eu criei uma chave estrangeira para isso seguir correto.
+- Sempre verifique o arquivo ./bugs.md para ver se tem bugs para serem resolvidos. Ao analisar sempre me questione se eu quero que resolva.

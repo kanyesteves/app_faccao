@@ -46,23 +46,46 @@ O projeto segue uma arquitetura **multi-tenant**, onde:
 
 ```
 app_faccao/
-├── public/              # Arquivos estáticos
+├── public/                  # Arquivos estáticos
 │   └── index.html
 ├── src/
-│   ├── assets/          # Imagens, fontes, etc
-│   ├── global/          # Configurações globais
-│   │   └── supabase.ts  # Cliente Supabase
-│   ├── router/          # Configuração de rotas
+│   ├── assets/              # Imagens, fontes, etc
+│   ├── composables/         # Composables Vue (lógica reutilizável)
+│   │   └── useAuth.ts       # Composable de autenticação
+│   ├── global/              # Configurações e componentes globais
+│   │   ├── components/      # Componentes globais
+│   │   │   └── NavbarMenu.vue
+│   │   └── supabase.ts      # Cliente Supabase (deprecated)
+│   ├── pages/               # Páginas específicas de features
+│   │   └── lot/             # Páginas relacionadas a lotes
+│   │       ├── ListLot.vue
+│   │       ├── SaveLot.vue
+│   │       └── RemoveLot.vue
+│   ├── router/              # Configuração de rotas
 │   │   └── index.ts
-│   ├── system/          # Componentes e lógica do sistema
-│   ├── views/           # Páginas/Views da aplicação
+│   ├── services/            # Serviços de comunicação com backend
+│   │   ├── supabaseClient.ts  # Cliente Supabase configurado
+│   │   ├── authService.ts     # Serviço de autenticação
+│   │   └── lotService.ts      # Serviço de lotes
+│   ├── stores/              # Pinia stores (gerenciamento de estado)
+│   │   └── authStore.ts     # Store de autenticação
+│   ├── types/               # Definições de tipos TypeScript
+│   │   └── auth.types.ts    # Tipos de autenticação
+│   ├── views/               # Views principais da aplicação
 │   │   ├── HomeView.vue
-│   │   └── LoginView.vue
-│   ├── App.vue          # Componente raiz
-│   ├── main.ts          # Entry point
-│   └── shims-vue.d.ts   # Declarações TypeScript
-├── .env                 # Variáveis de ambiente (não versionado)
+│   │   ├── LoginView.vue
+│   │   ├── LotView.vue
+│   │   ├── CustomerView.vue
+│   │   ├── ReferenceView.vue
+│   │   ├── TypeServiceView.vue
+│   │   └── OrganizationView.vue
+│   ├── App.vue              # Componente raiz
+│   ├── main.ts              # Entry point
+│   └── shims-vue.d.ts       # Declarações TypeScript
+├── .env                     # Variáveis de ambiente (não versionado)
 ├── .gitignore
+├── bugs.md                  # Registro de bugs
+├── CLAUDE.md                # Instruções para o Claude
 ├── package.json
 ├── tsconfig.json
 ├── vue.config.js
@@ -120,25 +143,37 @@ npm run lint
 
 ## 🔐 Sistema de Autenticação
 
-O projeto possui um sistema de autenticação básico:
-- Rotas protegidas com `meta: { requiresAuth: true }`
-- Autenticação via token armazenado no localStorage
-- Redirecionamento automático para login quando não autenticado
+O projeto possui um sistema completo de autenticação integrado com Supabase:
+- **Autenticação via Supabase Auth** - Login com email e senha
+- **Persistência de sessão** - Sessão armazenada no localStorage que persiste após recarregar a página
+- **Rotas protegidas** - Navegação controlada com `meta: { requiresAuth: true }`
+- **Guards assíncronos** - Router guards que aguardam verificação de autenticação antes de permitir navegação
+- **Auto-refresh de token** - Tokens de acesso renovados automaticamente
+- **State management com Pinia** - Estado de autenticação centralizado e reativo
+- **Redirecionamento inteligente** - Redirecionamento automático para login quando não autenticado
 
 ## 🚧 Status do Projeto
 
 Em desenvolvimento - MVP
 
+## ✅ Features Implementadas
+
+- [x] **Autenticação com Supabase** - Sistema completo de login/logout
+- [x] **Persistência de sessão** - Sessão mantida após F5/reload da página
+- [x] **Navbar global** - Menu de navegação responsivo
+- [x] **CRUD de Lotes** - Criar, listar, editar e remover lotes de produção
+- [x] **Proteção de rotas** - Sistema de guards assíncronos para rotas protegidas
+- [x] **Gerenciamento de estado** - Pinia store para autenticação
+
 ## 📝 Próximas Features
 
-- [ ] Implementar autenticação com Supabase
-- [ ] Telas de cadastro de lotes
-- [ ] Telas de cadastro de referências
-- [ ] Telas de cadastro de tipos de serviços
-- [ ] Telas de cadastro de clientes
-- [ ] Telas de ajutes da organização
-- [ ] Sistema de gerenciamento de lotes
-- [ ] Dashboard com métricas e indicadores
+- [ ] Implementar CRUD completo de referências
+- [ ] Implementar CRUD completo de tipos de serviços
+- [ ] Implementar CRUD completo de clientes
+- [ ] Tela de ajustes da organização
+- [ ] Dashboard com métricas e indicadores de produção
+- [ ] Sistema de relatórios
+- [ ] Gestão de usuários da organização (multi-usuários por tenant)
 
 ## 👨‍💻 Autor
 

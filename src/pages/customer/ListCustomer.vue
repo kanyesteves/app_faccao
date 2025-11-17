@@ -1,30 +1,34 @@
 <template>
-  <div class="list-lot">
+  <div class="list-customer">
     <!-- Loading Spinner -->
     <div v-if="loading" class="loading-container">
       <ProgressSpinner />
     </div>
 
     <!-- Mensagem quando não há registros -->
-    <div v-else-if="!loading && lots.length === 0" class="empty-state">
-      <i class="pi pi-inbox empty-icon"></i>
-      <h3>Nenhum lote cadastrado</h3>
-      <p>Comece criando seu primeiro lote clicando no botão abaixo</p>
+    <div v-else-if="!loading && customers.length === 0" class="empty-state">
+      <i class="pi pi-users empty-icon"></i>
+      <h3>Nenhum cliente cadastrado</h3>
+      <p>Comece adicionando seu primeiro cliente clicando no botão abaixo</p>
     </div>
 
     <!-- Lista de Cards -->
-    <div v-else class="lot-cards">
-      <Card v-for="lot in lots" :key="lot.id" class="lot-card">
+    <div v-else class="customer-cards">
+      <Card v-for="customer in customers" :key="customer.id" class="customer-card">
         <template #header>
           <div class="card-header">
-            <h3>Lote #{{ lot.number }}</h3>
+            <h3>{{ customer.name }}</h3>
           </div>
         </template>
         <template #content>
           <div class="card-content">
             <div class="info-row">
               <span class="label">Data de Criação:</span>
-              <span class="value">{{ lot.createdAt }}</span>
+              <span class="value">{{ customer.createdAt }}</span>
+            </div>
+            <div v-if="customer.dateClose" class="info-row">
+              <span class="label">Data de Fechamento:</span>
+              <span class="value">{{ customer.dateClose }}</span>
             </div>
           </div>
         </template>
@@ -34,13 +38,13 @@
               icon="pi pi-pencil"
               severity="info"
               text
-              @click="editLot(lot.id)"
+              @click="editCustomer(customer.id)"
             />
             <Button
               icon="pi pi-trash"
               severity="danger"
               text
-              @click="deleteLot(lot.id)"
+              @click="deleteCustomer(customer.id)"
             />
           </div>
         </template>
@@ -55,33 +59,34 @@ import Card from 'primevue/card'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
-import { getLotsByOrganization, deleteLot as deleteLotService } from '@/services/lotService'
+import { getCustomersByOrganization, deleteCustomer as deleteCustomerService } from '@/services/customerService'
 
 // Composables
 const toast = useToast()
 
 // Data
-const lots = ref<any[]>([])
+const customers = ref<any[]>([])
 const loading = ref(false)
 
 // Methods
-const loadLots = async () => {
+const loadCustomers = async () => {
   loading.value = true
 
   try {
-    const response = await getLotsByOrganization()
+    const response = await getCustomersByOrganization()
 
     if (response.success) {
-      lots.value = response.data.map((lot: any) => ({
-        id: lot.id,
-        number: lot.number,
-        createdAt: new Date(lot.created_at).toLocaleDateString('pt-BR')
+      customers.value = response.data.map((customer: any) => ({
+        id: customer.id,
+        name: customer.name,
+        dateClose: customer.date_close ? new Date(customer.date_close).toLocaleDateString('pt-BR') : null,
+        createdAt: new Date(customer.created_at).toLocaleDateString('pt-BR')
       }))
     } else {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: response.error || 'Erro ao carregar lotes',
+        detail: response.error || 'Erro ao carregar clientes',
         life: 3000
       })
     }
@@ -89,7 +94,7 @@ const loadLots = async () => {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.message || 'Erro inesperado ao carregar lotes',
+      detail: error.message || 'Erro inesperado ao carregar clientes',
       life: 3000
     })
   } finally {
@@ -97,34 +102,34 @@ const loadLots = async () => {
   }
 }
 
-const editLot = (id: string) => {
-  console.log('Editar lote:', id)
+const editCustomer = (id: number) => {
+  console.log('Editar cliente:', id)
   // Função será implementada
 }
 
-const deleteLot = async (id: string) => {
-  if (!confirm('Tem certeza que deseja deletar este lote?')) {
+const deleteCustomer = async (id: number) => {
+  if (!confirm('Tem certeza que deseja deletar este cliente?')) {
     return
   }
 
   try {
-    const response = await deleteLotService(id)
+    const response = await deleteCustomerService(id)
 
     if (response.success) {
       toast.add({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Lote deletado com sucesso!',
+        detail: 'Cliente deletado com sucesso!',
         life: 3000
       })
 
       // Recarrega a lista
-      loadLots()
+      loadCustomers()
     } else {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: response.error || 'Erro ao deletar lote',
+        detail: response.error || 'Erro ao deletar cliente',
         life: 3000
       })
     }
@@ -132,7 +137,7 @@ const deleteLot = async (id: string) => {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.message || 'Erro inesperado ao deletar lote',
+      detail: error.message || 'Erro inesperado ao deletar cliente',
       life: 3000
     })
   }
@@ -140,30 +145,30 @@ const deleteLot = async (id: string) => {
 
 // Lifecycle
 onMounted(() => {
-  loadLots()
+  loadCustomers()
 })
 
-// Expõe loadLots para o componente pai
+// Expõe loadCustomers para o componente pai
 defineExpose({
-  loadLots
+  loadCustomers
 })
 </script>
 
 <style scoped lang="scss">
-.list-lot {
+.list-customer {
   padding: 1rem;
   font-family: Avenir, Helvetica, sans-serif;
   height: 100%;
   overflow-y: auto;
 }
 
-.lot-cards {
+.customer-cards {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.lot-card {
+.customer-card {
   font-family: Avenir, Helvetica, sans-serif;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
