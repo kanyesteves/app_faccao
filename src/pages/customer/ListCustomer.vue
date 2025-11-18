@@ -26,9 +26,9 @@
               <span class="label">Data de Criação:</span>
               <span class="value">{{ customer.createdAt }}</span>
             </div>
-            <div v-if="customer.dateClose" class="info-row">
-              <span class="label">Data de Fechamento:</span>
-              <span class="value">{{ customer.dateClose }}</span>
+            <div v-if="customer.dayClose" class="info-row">
+              <span class="label">Dia do Fechamento:</span>
+              <span class="value">Dia {{ customer.dayClose }}</span>
             </div>
           </div>
         </template>
@@ -76,12 +76,14 @@ const loadCustomers = async () => {
     const response = await getCustomersByOrganization()
 
     if (response.success) {
-      customers.value = response.data.map((customer: any) => ({
-        id: customer.id,
-        name: customer.name,
-        dateClose: customer.date_close ? new Date(customer.date_close).toLocaleDateString('pt-BR') : null,
-        createdAt: new Date(customer.created_at).toLocaleDateString('pt-BR')
-      }))
+      customers.value = response.data.map((customer: any) => {
+        return {
+          id: customer.id,
+          name: customer.name,
+          dayClose: customer.date_close || null,
+          createdAt: new Date(customer.created_at).toLocaleDateString('pt-BR')
+        }
+      })
     } else {
       toast.add({
         severity: 'error',
@@ -166,6 +168,8 @@ defineExpose({
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  max-width: 800px;
+  margin: 0 auto;
 }
 
 .customer-card {

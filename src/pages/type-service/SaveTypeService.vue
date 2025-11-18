@@ -1,36 +1,24 @@
 <template>
   <Dialog
     v-model:visible="visible"
-    header="Criar Cliente"
+    header="Criar Tipo de Serviço"
     :modal="true"
     :style="{ width: '90vw', maxWidth: '600px' }"
   >
-    <div class="save-customer">
+    <div class="save-type-service">
       <form @submit.prevent="handleSubmit">
         <div class="form-field">
-          <label for="customerName">Nome do Cliente</label>
+          <label for="typeName">Nome do Tipo de Serviço</label>
           <InputText
-            id="customerName"
-            v-model="customerName"
-            placeholder="Digite o nome do cliente"
-            :class="{ 'p-invalid': submitted && !customerName }"
+            id="typeName"
+            v-model="typeName"
+            placeholder="Digite o nome do tipo de serviço"
+            :class="{ 'p-invalid': submitted && !typeName }"
             autofocus
           />
-          <small v-if="submitted && !customerName" class="p-error">
-            Nome do cliente é obrigatório
+          <small v-if="submitted && !typeName" class="p-error">
+            Nome do tipo de serviço é obrigatório
           </small>
-        </div>
-
-        <div class="form-field">
-          <label for="dayClose">Dia do Fechamento (opcional)</label>
-          <InputText
-            id="dayClose"
-            v-model="dayClose"
-            placeholder="Digite o dia (1-31)"
-            type="number"
-            min="1"
-            max="31"
-          />
         </div>
 
         <div class="form-actions">
@@ -57,7 +45,7 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { createCustomer } from '@/services/customerService'
+import { createTypeService } from '@/services/typeServiceService'
 
 // Props
 interface Props {
@@ -67,15 +55,14 @@ interface Props {
 const props = defineProps<Props>()
 
 // Emits
-const emit = defineEmits(['update:show', 'customerCreated'])
+const emit = defineEmits(['update:show', 'typeServiceCreated'])
 
 // Composables
 const toast = useToast()
 
 // Data
 const visible = ref(props.show)
-const customerName = ref('')
-const dayClose = ref('')
+const typeName = ref('')
 const loading = ref(false)
 const submitted = ref(false)
 
@@ -93,8 +80,7 @@ watch(visible, (newValue) => {
 
 // Methods
 const resetForm = () => {
-  customerName.value = ''
-  dayClose.value = ''
+  typeName.value = ''
   submitted.value = false
   loading.value = false
 }
@@ -107,34 +93,31 @@ const handleCancel = () => {
 const handleSubmit = async () => {
   submitted.value = true
 
-  if (!customerName.value.trim()) {
+  if (!typeName.value.trim()) {
     return
   }
 
   loading.value = true
 
   try {
-    const response = await createCustomer({
-      name: customerName.value.trim(),
-      date_close: dayClose.value.trim() || null
-    })
+    const response = await createTypeService(typeName.value.trim())
 
     if (response.success) {
       toast.add({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Cliente criado com sucesso!',
+        detail: 'Tipo de serviço criado com sucesso!',
         life: 3000
       })
 
-      emit('customerCreated')
+      emit('typeServiceCreated')
       visible.value = false
       resetForm()
     } else {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: response.error || 'Erro ao criar cliente',
+        detail: response.error || 'Erro ao criar tipo de serviço',
         life: 3000
       })
     }
@@ -142,7 +125,7 @@ const handleSubmit = async () => {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.message || 'Erro inesperado ao criar cliente',
+      detail: error.message || 'Erro inesperado ao criar tipo de serviço',
       life: 3000
     })
   } finally {
@@ -152,7 +135,7 @@ const handleSubmit = async () => {
 </script>
 
 <style scoped lang="scss">
-.save-customer {
+.save-type-service {
   padding: 1rem;
   font-family: Avenir, Helvetica, sans-serif;
 

@@ -5,3 +5,4 @@
 - Tabelas do banco de dados: users, organization, customer, lot, type_service, reference.
 - Esse projeto vai ser em multy-tenant. Eu vou ter um banco para todos os usuários/clientes. Cada usuário vai ter uma organização e vai poder ver somente as tabelas referente a sua organização. Em todas as tabelas eu criei uma chave estrangeira para isso seguir correto.
 - Sempre verifique o arquivo ./bugs.md para ver se tem bugs para serem resolvidos. Ao analisar sempre me questione se eu quero que resolva.
+- Sempre verifique o git log para ver o que já foi feito no projeto. Assim já economiza mais tempo quando eu passar os novos comandos.

@@ -9,28 +9,61 @@
       />
     </div>
     <div class="content">
-      <h1>Tipos de Serviço</h1>
+      <ListTypeService ref="listTypeServiceRef" />
     </div>
+    <div class="botton-navbar">
+      <Button
+        label="Criar Tipo de Serviço"
+        icon="pi pi-plus"
+        @click="openCreateDialog"
+        class="btn-create"
+      />
+    </div>
+
+    <!-- Componente SaveTypeService com Dialog -->
+    <SaveTypeService
+      :show="showSaveDialog"
+      @update:show="showSaveDialog = $event"
+      @typeServiceCreated="handleTypeServiceCreated"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 import NavbarMenu from '@/global/components/NavbarMenu.vue'
+import SaveTypeService from '@/pages/type-service/SaveTypeService.vue'
+import ListTypeService from '@/pages/type-service/ListTypeService.vue'
+import Button from 'primevue/button'
 import Avatar from 'primevue/avatar'
 import { useAuthStore } from '@/stores/authStore'
 
+const showSaveDialog = ref(false)
+const listTypeServiceRef = ref()
 const authStore = useAuthStore()
 
 const userInitial = computed(() => {
   const name = authStore.userName || authStore.userEmail
   return name ? name.charAt(0).toUpperCase() : 'U'
 })
+
+const openCreateDialog = () => {
+  showSaveDialog.value = true
+}
+
+const handleTypeServiceCreated = () => {
+  // Recarrega a lista de tipos de serviço
+  if (listTypeServiceRef.value) {
+    listTypeServiceRef.value.loadTypeServices()
+  }
+}
 </script>
 
 <style scoped lang="scss">
 .type-service-view {
   padding: 0;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .header-navbar {
@@ -53,8 +86,34 @@ const userInitial = computed(() => {
   font-weight: 600;
 }
 
+.botton-navbar {
+  display: flex;
+  justify-content: center;
+  background-color: #2f1c6a;
+  padding: 10px 20px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
 .content {
-  padding: 2rem;
+  padding: 0;
+  height: calc(100vh - 120px);
   margin-top: 60px;
+  overflow: hidden;
+}
+
+.btn-create {
+  background-color: #b3a2d4 !important;
+  border-color: #b3a2d4 !important;
+  color: #fff !important;
+
+  &:hover {
+    background-color: #9f8ac4 !important;
+    border-color: #9f8ac4 !important;
+  }
 }
 </style>

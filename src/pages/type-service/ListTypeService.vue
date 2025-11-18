@@ -1,30 +1,30 @@
 <template>
-  <div class="list-lot">
+  <div class="list-type-service">
     <!-- Loading Spinner -->
     <div v-if="loading" class="loading-container">
       <ProgressSpinner />
     </div>
 
     <!-- Mensagem quando não há registros -->
-    <div v-else-if="!loading && lots.length === 0" class="empty-state">
+    <div v-else-if="!loading && typeServices.length === 0" class="empty-state">
       <i class="pi pi-inbox empty-icon"></i>
-      <h3>Nenhum lote cadastrado</h3>
-      <p>Comece criando seu primeiro lote clicando no botão abaixo</p>
+      <h3>Nenhum tipo de serviço cadastrado</h3>
+      <p>Comece criando seu primeiro tipo de serviço clicando no botão abaixo</p>
     </div>
 
     <!-- Lista de Cards -->
-    <div v-else class="lot-cards">
-      <Card v-for="lot in lots" :key="lot.id" class="lot-card">
+    <div v-else class="type-service-cards">
+      <Card v-for="typeService in typeServices" :key="typeService.id" class="type-service-card">
         <template #header>
           <div class="card-header">
-            <h3>Lote #{{ lot.number }}</h3>
+            <h3>{{ typeService.name }}</h3>
           </div>
         </template>
         <template #content>
           <div class="card-content">
             <div class="info-row">
               <span class="label">Data de Criação:</span>
-              <span class="value">{{ lot.createdAt }}</span>
+              <span class="value">{{ typeService.createdAt }}</span>
             </div>
           </div>
         </template>
@@ -34,13 +34,13 @@
               icon="pi pi-pencil"
               severity="info"
               text
-              @click="editLot(lot.id)"
+              @click="editTypeService(typeService.id)"
             />
             <Button
               icon="pi pi-trash"
               severity="danger"
               text
-              @click="deleteLot(lot.id)"
+              @click="deleteTypeServiceHandler(typeService.id)"
             />
           </div>
         </template>
@@ -55,33 +55,33 @@ import Card from 'primevue/card'
 import Button from 'primevue/button'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
-import { getLotsByOrganization, deleteLot as deleteLotService } from '@/services/lotService'
+import { getTypeServicesByOrganization, deleteTypeService } from '@/services/typeServiceService'
 
 // Composables
 const toast = useToast()
 
 // Data
-const lots = ref<any[]>([])
+const typeServices = ref<any[]>([])
 const loading = ref(false)
 
 // Methods
-const loadLots = async () => {
+const loadTypeServices = async () => {
   loading.value = true
 
   try {
-    const response = await getLotsByOrganization()
+    const response = await getTypeServicesByOrganization()
 
     if (response.success) {
-      lots.value = response.data.map((lot: any) => ({
-        id: lot.id,
-        number: lot.number,
-        createdAt: new Date(lot.created_at).toLocaleDateString('pt-BR')
+      typeServices.value = response.data.map((typeService: any) => ({
+        id: typeService.id,
+        name: typeService.name,
+        createdAt: new Date(typeService.created_at).toLocaleDateString('pt-BR')
       }))
     } else {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: response.error || 'Erro ao carregar lotes',
+        detail: response.error || 'Erro ao carregar tipos de serviço',
         life: 3000
       })
     }
@@ -89,7 +89,7 @@ const loadLots = async () => {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.message || 'Erro inesperado ao carregar lotes',
+      detail: error.message || 'Erro inesperado ao carregar tipos de serviço',
       life: 3000
     })
   } finally {
@@ -97,34 +97,34 @@ const loadLots = async () => {
   }
 }
 
-const editLot = (id: string) => {
-  console.log('Editar lote:', id)
+const editTypeService = (id: number) => {
+  console.log('Editar tipo de serviço:', id)
   // Função será implementada
 }
 
-const deleteLot = async (id: string) => {
-  if (!confirm('Tem certeza que deseja deletar este lote?')) {
+const deleteTypeServiceHandler = async (id: number) => {
+  if (!confirm('Tem certeza que deseja deletar este tipo de serviço?')) {
     return
   }
 
   try {
-    const response = await deleteLotService(id)
+    const response = await deleteTypeService(id)
 
     if (response.success) {
       toast.add({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Lote deletado com sucesso!',
+        detail: 'Tipo de serviço deletado com sucesso!',
         life: 3000
       })
 
       // Recarrega a lista
-      loadLots()
+      loadTypeServices()
     } else {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: response.error || 'Erro ao deletar lote',
+        detail: response.error || 'Erro ao deletar tipo de serviço',
         life: 3000
       })
     }
@@ -132,7 +132,7 @@ const deleteLot = async (id: string) => {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.message || 'Erro inesperado ao deletar lote',
+      detail: error.message || 'Erro inesperado ao deletar tipo de serviço',
       life: 3000
     })
   }
@@ -140,24 +140,24 @@ const deleteLot = async (id: string) => {
 
 // Lifecycle
 onMounted(() => {
-  loadLots()
+  loadTypeServices()
 })
 
-// Expõe loadLots para o componente pai
+// Expõe loadTypeServices para o componente pai
 defineExpose({
-  loadLots
+  loadTypeServices
 })
 </script>
 
 <style scoped lang="scss">
-.list-lot {
+.list-type-service {
   padding: 1rem;
   font-family: Avenir, Helvetica, sans-serif;
   height: 100%;
   overflow-y: auto;
 }
 
-.lot-cards {
+.type-service-cards {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -165,7 +165,7 @@ defineExpose({
   margin: 0 auto;
 }
 
-.lot-card {
+.type-service-card {
   font-family: Avenir, Helvetica, sans-serif;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;

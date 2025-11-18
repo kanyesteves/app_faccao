@@ -25,7 +25,7 @@
             @click="visible = false"
           >
             <i class="pi pi-home"></i>
-            <span>Home</span>
+            <span>Indicadores</span>
           </router-link>
 
           <router-link
