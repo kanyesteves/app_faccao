@@ -9,6 +9,7 @@ import Tooltip from 'primevue/tooltip';
 import ConfirmationService from 'primevue/confirmationservice';
 import ToastService from 'primevue/toastservice';
 import { useAuthStore } from './stores/authStore';
+import './registerServiceWorker'
 
 import 'primeicons/primeicons.css'
 
