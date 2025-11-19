@@ -97,9 +97,11 @@ const loadLots = async () => {
   }
 }
 
+// Emits
+const emit = defineEmits(['edit'])
+
 const editLot = (id: string) => {
-  console.log('Editar lote:', id)
-  // Função será implementada
+  emit('edit', id)
 }
 
 const deleteLot = async (id: string) => {

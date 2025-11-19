@@ -9,7 +9,7 @@
       />
     </div>
     <div class="content">
-      <ListReference ref="listReferenceRef" />
+      <ListReference ref="listReferenceRef" @edit="handleEditReference" />
     </div>
     <div class="botton-navbar">
       <Button
@@ -23,6 +23,7 @@
     <!-- Componente SaveReference com Dialog -->
     <SaveReference
       :show="showSaveDialog"
+      :referenceId="selectedReferenceId"
       @update:show="showSaveDialog = $event"
       @referenceCreated="handleReferenceCreated"
     />
@@ -39,6 +40,7 @@ import Avatar from 'primevue/avatar'
 import { useAuthStore } from '@/stores/authStore'
 
 const showSaveDialog = ref(false)
+const selectedReferenceId = ref<number | null>(null)
 const listReferenceRef = ref()
 const authStore = useAuthStore()
 
@@ -48,6 +50,12 @@ const userInitial = computed(() => {
 })
 
 const openCreateDialog = () => {
+  selectedReferenceId.value = null
+  showSaveDialog.value = true
+}
+
+const handleEditReference = (id: number) => {
+  selectedReferenceId.value = id
   showSaveDialog.value = true
 }
 

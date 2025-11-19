@@ -97,9 +97,11 @@ const loadTypeServices = async () => {
   }
 }
 
+// Emits
+const emit = defineEmits(['edit'])
+
 const editTypeService = (id: number) => {
-  console.log('Editar tipo de serviço:', id)
-  // Função será implementada
+  emit('edit', id)
 }
 
 const deleteTypeServiceHandler = async (id: number) => {

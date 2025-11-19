@@ -9,7 +9,7 @@
       />
     </div>
     <div class="content">
-      <ListTypeService ref="listTypeServiceRef" />
+      <ListTypeService ref="listTypeServiceRef" @edit="handleEditTypeService" />
     </div>
     <div class="botton-navbar">
       <Button
@@ -23,6 +23,7 @@
     <!-- Componente SaveTypeService com Dialog -->
     <SaveTypeService
       :show="showSaveDialog"
+      :typeServiceId="selectedTypeServiceId"
       @update:show="showSaveDialog = $event"
       @typeServiceCreated="handleTypeServiceCreated"
     />
@@ -39,6 +40,7 @@ import Avatar from 'primevue/avatar'
 import { useAuthStore } from '@/stores/authStore'
 
 const showSaveDialog = ref(false)
+const selectedTypeServiceId = ref<number | null>(null)
 const listTypeServiceRef = ref()
 const authStore = useAuthStore()
 
@@ -48,6 +50,12 @@ const userInitial = computed(() => {
 })
 
 const openCreateDialog = () => {
+  selectedTypeServiceId.value = null
+  showSaveDialog.value = true
+}
+
+const handleEditTypeService = (id: number) => {
+  selectedTypeServiceId.value = id
   showSaveDialog.value = true
 }
 

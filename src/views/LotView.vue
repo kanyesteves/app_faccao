@@ -9,7 +9,7 @@
       />
     </div>
     <div class="content">
-      <ListLot ref="listLotRef" />
+      <ListLot ref="listLotRef" @edit="handleEditLot" />
     </div>
     <div class="botton-navbar">
       <Button
@@ -23,6 +23,7 @@
     <!-- Componente SaveLot com Dialog -->
     <SaveLot
       :show="showSaveDialog"
+      :lotId="selectedLotId"
       @update:show="showSaveDialog = $event"
       @lotCreated="handleLotCreated"
     />
@@ -39,6 +40,7 @@ import Avatar from 'primevue/avatar'
 import { useAuthStore } from '@/stores/authStore'
 
 const showSaveDialog = ref(false)
+const selectedLotId = ref<string | null>(null)
 const listLotRef = ref()
 const authStore = useAuthStore()
 
@@ -48,6 +50,12 @@ const userInitial = computed(() => {
 })
 
 const openCreateDialog = () => {
+  selectedLotId.value = null
+  showSaveDialog.value = true
+}
+
+const handleEditLot = (id: string) => {
+  selectedLotId.value = id
   showSaveDialog.value = true
 }
 

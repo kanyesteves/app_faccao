@@ -33,6 +33,7 @@ export const createReference = async (reference: Omit<Reference, 'id' | 'created
           value: reference.value,
           estimated_date: reference.estimated_date,
           size: reference.size,
+          status: reference.status || 'Em Andamento',
           service_id: reference.service_id,
           lot_id: reference.lot_id,
           customer_id: reference.customer_id,
@@ -112,6 +113,40 @@ export const getReferencesByOrganization = async () => {
 }
 
 /**
+ * Busca uma referência por ID
+ */
+export const getReferenceById = async (referenceId: number) => {
+  try {
+    const { data, error } = await supabase
+      .from('reference')
+      .select('*')
+      .eq('id', referenceId)
+      .single()
+
+    if (error) {
+      console.error('Erro ao buscar referência:', error)
+      return {
+        success: false,
+        error: error.message,
+        data: null
+      }
+    }
+
+    return {
+      success: true,
+      data: data
+    }
+  } catch (error: any) {
+    console.error('Erro ao buscar referência:', error)
+    return {
+      success: false,
+      error: error.message || 'Erro desconhecido ao buscar referência',
+      data: null
+    }
+  }
+}
+
+/**
  * Atualiza uma referência
  */
 export const updateReference = async (
@@ -129,6 +164,7 @@ export const updateReference = async (
         value: reference.value,
         estimated_date: reference.estimated_date,
         size: reference.size,
+        status: reference.status,
         service_id: reference.service_id,
         lot_id: reference.lot_id,
         customer_id: reference.customer_id

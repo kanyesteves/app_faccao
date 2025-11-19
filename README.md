@@ -35,12 +35,12 @@ O projeto segue uma arquitetura **multi-tenant**, onde:
 
 ### Estrutura de Tabelas
 
-- `users` - Usuários do sistema
-- `organization` - Organizações (tenants)
-- `customer` - Clientes das organizações
-- `lot` - Lotes de produção
-- `type_service` - Tipos de serviços oferecidos
-- `reference` - Referências de produtos
+- `users` - Usuários do sistema (gerenciado pelo Supabase Auth)
+- `organization` - Organizações (tenants) - contém nome, email, CNPJ, plano e user_id
+- `customer` - Clientes das organizações - contém nome e dia de fechamento
+- `lot` - Lotes de produção - contém número do lote
+- `type_service` - Tipos de serviços oferecidos - contém nome do serviço
+- `reference` - Referências de produtos - contém código, nome, cor, quantidade, valor, tamanho, data estimada e relacionamentos com cliente, lote e tipo de serviço
 
 ## 📁 Estrutura do Projeto
 
@@ -53,24 +53,40 @@ app_faccao/
 │   ├── composables/         # Composables Vue (lógica reutilizável)
 │   │   └── useAuth.ts       # Composable de autenticação
 │   ├── global/              # Configurações e componentes globais
-│   │   ├── components/      # Componentes globais
-│   │   │   └── NavbarMenu.vue
-│   │   └── supabase.ts      # Cliente Supabase (deprecated)
+│   │   └── components/      # Componentes globais
+│   │       └── NavbarMenu.vue
 │   ├── pages/               # Páginas específicas de features
-│   │   └── lot/             # Páginas relacionadas a lotes
-│   │       ├── ListLot.vue
-│   │       ├── SaveLot.vue
-│   │       └── RemoveLot.vue
+│   │   ├── customer/        # Páginas de clientes
+│   │   │   ├── ListCustomer.vue
+│   │   │   └── SaveCustomer.vue
+│   │   ├── lot/             # Páginas de lotes
+│   │   │   ├── ListLot.vue
+│   │   │   ├── SaveLot.vue
+│   │   │   └── RemoveLot.vue
+│   │   ├── reference/       # Páginas de referências
+│   │   │   ├── ListReference.vue
+│   │   │   └── SaveReference.vue
+│   │   └── type-service/    # Páginas de tipos de serviço
+│   │       ├── ListTypeService.vue
+│   │       ├── SaveTypeService.vue
+│   │       └── RemoveTypeService.vue
 │   ├── router/              # Configuração de rotas
 │   │   └── index.ts
 │   ├── services/            # Serviços de comunicação com backend
-│   │   ├── supabaseClient.ts  # Cliente Supabase configurado
-│   │   ├── authService.ts     # Serviço de autenticação
-│   │   └── lotService.ts      # Serviço de lotes
+│   │   ├── supabaseClient.ts      # Cliente Supabase configurado
+│   │   ├── authService.ts         # Serviço de autenticação
+│   │   ├── customerService.ts     # Serviço de clientes
+│   │   ├── lotService.ts          # Serviço de lotes
+│   │   ├── organizationService.ts # Serviço de organização
+│   │   ├── referenceService.ts    # Serviço de referências
+│   │   └── typeServiceService.ts  # Serviço de tipos de serviço
 │   ├── stores/              # Pinia stores (gerenciamento de estado)
 │   │   └── authStore.ts     # Store de autenticação
 │   ├── types/               # Definições de tipos TypeScript
-│   │   └── auth.types.ts    # Tipos de autenticação
+│   │   ├── auth.types.ts         # Tipos de autenticação
+│   │   ├── customer.types.ts     # Tipos de clientes
+│   │   ├── organization.types.ts # Tipos de organização
+│   │   └── reference.types.ts    # Tipos de referências
 │   ├── views/               # Views principais da aplicação
 │   │   ├── HomeView.vue
 │   │   ├── LoginView.vue
@@ -160,20 +176,25 @@ Em desenvolvimento - MVP
 
 - [x] **Autenticação com Supabase** - Sistema completo de login/logout
 - [x] **Persistência de sessão** - Sessão mantida após F5/reload da página
-- [x] **Navbar global** - Menu de navegação responsivo
+- [x] **Navbar global** - Menu de navegação responsivo com Avatar do usuário
 - [x] **CRUD de Lotes** - Criar, listar, editar e remover lotes de produção
+- [x] **CRUD de Clientes** - Criar, listar, editar e remover clientes com dia de fechamento
+- [x] **CRUD de Tipos de Serviço** - Criar, listar, editar e remover tipos de serviços
+- [x] **CRUD de Referências** - Criar, listar, editar e remover referências com relacionamentos (cliente, lote, tipo de serviço)
+- [x] **Tela de Organização** - Visualizar e editar informações da organização (nome, email, CNPJ, plano)
 - [x] **Proteção de rotas** - Sistema de guards assíncronos para rotas protegidas
 - [x] **Gerenciamento de estado** - Pinia store para autenticação
+- [x] **Design responsivo** - Interface adaptada para desktop e mobile com cards limitados em monitores grandes
+- [x] **Sistema multi-tenant** - Isolamento completo de dados por organização
 
 ## 📝 Próximas Features
 
-- [ ] Implementar CRUD completo de referências
-- [ ] Implementar CRUD completo de tipos de serviços
-- [ ] Implementar CRUD completo de clientes
-- [ ] Tela de ajustes da organização
+- [ ] Funcionalidade de edição em todos os CRUDs (atualmente só possui criação, listagem e remoção)
 - [ ] Dashboard com métricas e indicadores de produção
 - [ ] Sistema de relatórios
 - [ ] Gestão de usuários da organização (multi-usuários por tenant)
+- [ ] Filtros e busca nas listagens
+- [ ] Paginação para grandes volumes de dados
 
 ## 👨‍💻 Autor
 

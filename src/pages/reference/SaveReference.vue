@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model:visible="visible"
-    header="Criar Referência"
+    :header="isEditing ? 'Editar Referência' : 'Criar Referência'"
     :modal="true"
     :style="{ width: '90vw', maxWidth: '700px' }"
   >
@@ -165,6 +165,20 @@
           </small>
         </div>
 
+        <div class="form-field">
+          <label for="status">Status</label>
+          <Select
+            id="status"
+            v-model="formData.status"
+            :options="statusOptions"
+            placeholder="Selecione o status"
+            :class="{ 'p-invalid': submitted && !formData.status }"
+          />
+          <small v-if="submitted && !formData.status" class="p-error">
+            Status é obrigatório
+          </small>
+        </div>
+
         <div class="form-actions">
           <Button
             label="Cancelar"
@@ -184,14 +198,14 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch } from 'vue'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import DatePicker from 'primevue/datepicker'
 import Select from 'primevue/select'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { createReference } from '@/services/referenceService'
+import { createReference, updateReference, getReferenceById } from '@/services/referenceService'
 import { getCustomersByOrganization } from '@/services/customerService'
 import { getLotsByOrganization } from '@/services/lotService'
 import { getTypeServicesByOrganization } from '@/services/typeServiceService'
@@ -199,6 +213,7 @@ import { getTypeServicesByOrganization } from '@/services/typeServiceService'
 // Props
 interface Props {
   show: boolean
+  referenceId?: number | null
 }
 
 const props = defineProps<Props>()
@@ -216,6 +231,7 @@ const submitted = ref(false)
 const loadingCustomers = ref(false)
 const loadingLots = ref(false)
 const loadingServiceTypes = ref(false)
+const isEditing = ref(false)
 
 const formData = ref({
   code: '',
@@ -225,6 +241,7 @@ const formData = ref({
   value: null as number | null,
   estimated_date: null as Date | null,
   size: '',
+  status: 'Em Andamento',
   service_id: null as number | null,
   lot_id: null as number | null,
   customer_id: null as number | null
@@ -233,13 +250,20 @@ const formData = ref({
 const customers = ref<any[]>([])
 const lots = ref<any[]>([])
 const serviceTypes = ref<any[]>([])
+const statusOptions = ref<string[]>(['Em Andamento', 'Concluída', 'Cancelada'])
 
 // Watchers
-watch(() => props.show, (newValue) => {
+watch(() => props.show, async (newValue) => {
   visible.value = newValue
   if (newValue) {
-    resetForm()
-    loadSelectOptions()
+    await loadSelectOptions()
+    if (props.referenceId) {
+      isEditing.value = true
+      await loadReference(props.referenceId)
+    } else {
+      isEditing.value = false
+      resetForm()
+    }
   }
 })
 
@@ -298,12 +322,53 @@ const resetForm = () => {
     value: null,
     estimated_date: null,
     size: '',
+    status: 'Em Andamento',
     service_id: null,
     lot_id: null,
     customer_id: null
   }
   submitted.value = false
   loading.value = false
+  isEditing.value = false
+}
+
+const loadReference = async (id: number) => {
+  loading.value = true
+  try {
+    const response = await getReferenceById(id)
+
+    if (response.success && response.data) {
+      formData.value = {
+        code: response.data.code,
+        name: response.data.name,
+        color: response.data.color,
+        amount: response.data.amount,
+        value: response.data.value,
+        estimated_date: new Date(response.data.estimated_date),
+        size: response.data.size,
+        status: response.data.status || 'Em Andamento',
+        service_id: response.data.service_id,
+        lot_id: response.data.lot_id,
+        customer_id: response.data.customer_id
+      }
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: response.error || 'Erro ao carregar referência',
+        life: 3000
+      })
+    }
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: error.message || 'Erro inesperado ao carregar referência',
+      life: 3000
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleCancel = () => {
@@ -320,6 +385,7 @@ const handleSubmit = async () => {
     !formData.value.name.trim() ||
     !formData.value.color.trim() ||
     !formData.value.size.trim() ||
+    !formData.value.status.trim() ||
     !formData.value.amount ||
     !formData.value.value ||
     !formData.value.estimated_date ||
@@ -333,7 +399,7 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    const response = await createReference({
+    const referenceData = {
       code: formData.value.code.trim(),
       name: formData.value.name.trim(),
       color: formData.value.color.trim(),
@@ -341,16 +407,21 @@ const handleSubmit = async () => {
       value: formData.value.value,
       estimated_date: formData.value.estimated_date.toISOString().split('T')[0],
       size: formData.value.size.trim(),
+      status: formData.value.status.trim(),
       service_id: formData.value.service_id,
       lot_id: formData.value.lot_id,
       customer_id: formData.value.customer_id
-    })
+    }
+
+    const response = isEditing.value && props.referenceId
+      ? await updateReference(props.referenceId, referenceData)
+      : await createReference(referenceData)
 
     if (response.success) {
       toast.add({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Referência criada com sucesso!',
+        detail: isEditing.value ? 'Referência atualizada com sucesso!' : 'Referência criada com sucesso!',
         life: 3000
       })
 
@@ -361,7 +432,7 @@ const handleSubmit = async () => {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: response.error || 'Erro ao criar referência',
+        detail: response.error || `Erro ao ${isEditing.value ? 'atualizar' : 'criar'} referência`,
         life: 3000
       })
     }
@@ -369,7 +440,7 @@ const handleSubmit = async () => {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.message || 'Erro inesperado ao criar referência',
+      detail: error.message || `Erro inesperado ao ${isEditing.value ? 'atualizar' : 'criar'} referência`,
       life: 3000
     })
   } finally {

@@ -132,6 +132,40 @@ export const getCustomersByOrganization = async () => {
 }
 
 /**
+ * Busca um cliente por ID
+ */
+export const getCustomerById = async (customerId: number) => {
+  try {
+    const { data, error } = await supabase
+      .from('customer')
+      .select('*')
+      .eq('id', customerId)
+      .single()
+
+    if (error) {
+      console.error('Erro ao buscar cliente:', error)
+      return {
+        success: false,
+        error: error.message,
+        data: null
+      }
+    }
+
+    return {
+      success: true,
+      data: data
+    }
+  } catch (error: any) {
+    console.error('Erro ao buscar cliente:', error)
+    return {
+      success: false,
+      error: error.message || 'Erro desconhecido ao buscar cliente',
+      data: null
+    }
+  }
+}
+
+/**
  * Atualiza um cliente
  */
 export const updateCustomer = async (customerId: number, customer: Omit<Customer, 'id' | 'created_at' | 'organization_id'>) => {

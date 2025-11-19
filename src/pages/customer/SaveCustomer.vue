@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model:visible="visible"
-    header="Criar Cliente"
+    :header="isEditing ? 'Editar Cliente' : 'Criar Cliente'"
     :modal="true"
     :style="{ width: '90vw', maxWidth: '600px' }"
   >
@@ -57,11 +57,12 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { createCustomer } from '@/services/customerService'
+import { createCustomer, updateCustomer, getCustomerById } from '@/services/customerService'
 
 // Props
 interface Props {
   show: boolean
+  customerId?: number | null
 }
 
 const props = defineProps<Props>()
@@ -78,12 +79,19 @@ const customerName = ref('')
 const dayClose = ref('')
 const loading = ref(false)
 const submitted = ref(false)
+const isEditing = ref(false)
 
 // Watchers
-watch(() => props.show, (newValue) => {
+watch(() => props.show, async (newValue) => {
   visible.value = newValue
   if (newValue) {
-    resetForm()
+    if (props.customerId) {
+      isEditing.value = true
+      await loadCustomer(props.customerId)
+    } else {
+      isEditing.value = false
+      resetForm()
+    }
   }
 })
 
@@ -97,6 +105,35 @@ const resetForm = () => {
   dayClose.value = ''
   submitted.value = false
   loading.value = false
+  isEditing.value = false
+}
+
+const loadCustomer = async (id: number) => {
+  loading.value = true
+  try {
+    const response = await getCustomerById(id)
+
+    if (response.success && response.data) {
+      customerName.value = response.data.name
+      dayClose.value = response.data.date_close || ''
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: response.error || 'Erro ao carregar cliente',
+        life: 3000
+      })
+    }
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: error.message || 'Erro inesperado ao carregar cliente',
+      life: 3000
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleCancel = () => {
@@ -114,16 +151,20 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    const response = await createCustomer({
+    const customerData = {
       name: customerName.value.trim(),
       date_close: dayClose.value.trim() || null
-    })
+    }
+
+    const response = isEditing.value && props.customerId
+      ? await updateCustomer(props.customerId, customerData)
+      : await createCustomer(customerData)
 
     if (response.success) {
       toast.add({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Cliente criado com sucesso!',
+        detail: isEditing.value ? 'Cliente atualizado com sucesso!' : 'Cliente criado com sucesso!',
         life: 3000
       })
 
@@ -134,7 +175,7 @@ const handleSubmit = async () => {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: response.error || 'Erro ao criar cliente',
+        detail: response.error || `Erro ao ${isEditing.value ? 'atualizar' : 'criar'} cliente`,
         life: 3000
       })
     }
@@ -142,7 +183,7 @@ const handleSubmit = async () => {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.message || 'Erro inesperado ao criar cliente',
+      detail: error.message || `Erro inesperado ao ${isEditing.value ? 'atualizar' : 'criar'} cliente`,
       life: 3000
     })
   } finally {

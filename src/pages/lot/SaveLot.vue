@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model:visible="visible"
-    header="Criar Lote"
+    :header="isEditing ? 'Editar Lote' : 'Criar Lote'"
     :modal="true"
     :style="{ width: '90vw', maxWidth: '600px' }"
   >
@@ -45,11 +45,12 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { createLot } from '@/services/lotService'
+import { createLot, updateLot, getLotById } from '@/services/lotService'
 
 // Props
 interface Props {
   show: boolean
+  lotId?: string | null
 }
 
 const props = defineProps<Props>()
@@ -65,12 +66,19 @@ const visible = ref(props.show)
 const lotNumber = ref('')
 const loading = ref(false)
 const submitted = ref(false)
+const isEditing = ref(false)
 
 // Watchers
-watch(() => props.show, (newValue) => {
+watch(() => props.show, async (newValue) => {
   visible.value = newValue
   if (newValue) {
-    resetForm()
+    if (props.lotId) {
+      isEditing.value = true
+      await loadLot(props.lotId)
+    } else {
+      isEditing.value = false
+      resetForm()
+    }
   }
 })
 
@@ -83,6 +91,34 @@ const resetForm = () => {
   lotNumber.value = ''
   submitted.value = false
   loading.value = false
+  isEditing.value = false
+}
+
+const loadLot = async (id: string) => {
+  loading.value = true
+  try {
+    const response = await getLotById(id)
+
+    if (response.success && response.data) {
+      lotNumber.value = response.data.number
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: response.error || 'Erro ao carregar lote',
+        life: 3000
+      })
+    }
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: error.message || 'Erro inesperado ao carregar lote',
+      life: 3000
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleCancel = () => {
@@ -100,13 +136,15 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    const response = await createLot(lotNumber.value.trim())
+    const response = isEditing.value && props.lotId
+      ? await updateLot(props.lotId, lotNumber.value.trim())
+      : await createLot(lotNumber.value.trim())
 
     if (response.success) {
       toast.add({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Lote criado com sucesso!',
+        detail: isEditing.value ? 'Lote atualizado com sucesso!' : 'Lote criado com sucesso!',
         life: 3000
       })
 
@@ -117,7 +155,7 @@ const handleSubmit = async () => {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: response.error || 'Erro ao criar lote',
+        detail: response.error || `Erro ao ${isEditing.value ? 'atualizar' : 'criar'} lote`,
         life: 3000
       })
     }
@@ -125,7 +163,7 @@ const handleSubmit = async () => {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.message || 'Erro inesperado ao criar lote',
+      detail: error.message || `Erro inesperado ao ${isEditing.value ? 'atualizar' : 'criar'} lote`,
       life: 3000
     })
   } finally {

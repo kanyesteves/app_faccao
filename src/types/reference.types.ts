@@ -11,6 +11,7 @@ export interface Reference {
   value: number
   estimated_date: string
   size: string
+  status: string
   service_id: number
   lot_id: number
   organization_id: string

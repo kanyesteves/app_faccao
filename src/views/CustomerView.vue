@@ -9,7 +9,7 @@
       />
     </div>
     <div class="content">
-      <ListCustomer ref="listCustomerRef" />
+      <ListCustomer ref="listCustomerRef" @edit="handleEditCustomer" />
     </div>
     <div class="botton-navbar">
       <Button
@@ -23,6 +23,7 @@
     <!-- Componente SaveCustomer com Dialog -->
     <SaveCustomer
       :show="showSaveDialog"
+      :customerId="selectedCustomerId"
       @update:show="showSaveDialog = $event"
       @customerCreated="handleCustomerCreated"
     />
@@ -39,6 +40,7 @@ import Avatar from 'primevue/avatar'
 import { useAuthStore } from '@/stores/authStore'
 
 const showSaveDialog = ref(false)
+const selectedCustomerId = ref<number | null>(null)
 const listCustomerRef = ref()
 const authStore = useAuthStore()
 
@@ -48,6 +50,12 @@ const userInitial = computed(() => {
 })
 
 const openCreateDialog = () => {
+  selectedCustomerId.value = null
+  showSaveDialog.value = true
+}
+
+const handleEditCustomer = (id: number) => {
+  selectedCustomerId.value = id
   showSaveDialog.value = true
 }
 

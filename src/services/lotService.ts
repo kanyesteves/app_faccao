@@ -137,6 +137,40 @@ export const getLotsByOrganization = async () => {
 }
 
 /**
+ * Busca um lote por ID
+ */
+export const getLotById = async (lotId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('lot')
+      .select('*')
+      .eq('id', lotId)
+      .single()
+
+    if (error) {
+      console.error('Erro ao buscar lote:', error)
+      return {
+        success: false,
+        error: error.message,
+        data: null
+      }
+    }
+
+    return {
+      success: true,
+      data: data
+    }
+  } catch (error: any) {
+    console.error('Erro ao buscar lote:', error)
+    return {
+      success: false,
+      error: error.message || 'Erro desconhecido ao buscar lote',
+      data: null
+    }
+  }
+}
+
+/**
  * Atualiza um lote
  */
 export const updateLot = async (lotId: string, lotNumber: string) => {

@@ -137,6 +137,40 @@ export const getTypeServicesByOrganization = async () => {
 }
 
 /**
+ * Busca um tipo de serviço por ID
+ */
+export const getTypeServiceById = async (typeServiceId: number) => {
+  try {
+    const { data, error } = await supabase
+      .from('type_service')
+      .select('*')
+      .eq('id', typeServiceId)
+      .single()
+
+    if (error) {
+      console.error('Erro ao buscar tipo de serviço:', error)
+      return {
+        success: false,
+        error: error.message,
+        data: null
+      }
+    }
+
+    return {
+      success: true,
+      data: data
+    }
+  } catch (error: any) {
+    console.error('Erro ao buscar tipo de serviço:', error)
+    return {
+      success: false,
+      error: error.message || 'Erro desconhecido ao buscar tipo de serviço',
+      data: null
+    }
+  }
+}
+
+/**
  * Atualiza um tipo de serviço
  */
 export const updateTypeService = async (typeServiceId: number, name: string) => {

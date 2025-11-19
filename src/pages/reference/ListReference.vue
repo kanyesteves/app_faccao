@@ -63,18 +63,24 @@
         </template>
         <template #footer>
           <div class="card-actions">
-            <Button
-              icon="pi pi-pencil"
-              severity="info"
-              text
-              @click="editReference(reference.id)"
+            <Tag
+              :value="reference.status"
+              :severity="getStatusSeverity(reference.status)"
             />
-            <Button
-              icon="pi pi-trash"
-              severity="danger"
-              text
-              @click="deleteReference(reference.id)"
-            />
+            <div class="actions-buttons">
+              <Button
+                icon="pi pi-pencil"
+                severity="info"
+                text
+                @click="editReference(reference.id)"
+              />
+              <Button
+                icon="pi pi-trash"
+                severity="danger"
+                text
+                @click="deleteReference(reference.id)"
+              />
+            </div>
           </div>
         </template>
       </Card>
@@ -86,6 +92,7 @@
 import { ref, onMounted } from 'vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
+import Tag from 'primevue/tag'
 import ProgressSpinner from 'primevue/progressspinner'
 import { useToast } from 'primevue/usetoast'
 import { getReferencesByOrganization, deleteReference as deleteReferenceService } from '@/services/referenceService'
@@ -123,6 +130,7 @@ const loadReferences = async () => {
           value: reference.value,
           totalValue: totalValue,
           size: reference.size,
+          status: reference.status || 'Em Andamento',
           estimatedDate: new Date(reference.estimated_date).toLocaleDateString('pt-BR'),
           createdAt: new Date(reference.created_at).toLocaleDateString('pt-BR'),
           customerName: reference.customer?.name || 'N/A',
@@ -150,9 +158,17 @@ const loadReferences = async () => {
   }
 }
 
+// Emits
+const emit = defineEmits(['edit'])
+
+const getStatusSeverity = (status: string) => {
+  if (status === 'Concluída') return 'success'
+  if (status === 'Cancelada') return 'danger'
+  return 'info'
+}
+
 const editReference = (id: number) => {
-  console.log('Editar referência:', id)
-  // Função será implementada
+  emit('edit', id)
 }
 
 const deleteReference = async (id: number) => {
@@ -278,10 +294,15 @@ defineExpose({
 
 .card-actions {
   display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
+  justify-content: space-between;
+  align-items: center;
   padding: 0.5rem 1rem;
   border-top: 1px solid #dee2e6;
+
+  .actions-buttons {
+    display: flex;
+    gap: 0.5rem;
+  }
 }
 
 .loading-container {

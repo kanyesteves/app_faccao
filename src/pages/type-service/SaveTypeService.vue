@@ -1,7 +1,7 @@
 <template>
   <Dialog
     v-model:visible="visible"
-    header="Criar Tipo de Serviço"
+    :header="isEditing ? 'Editar Tipo de Serviço' : 'Criar Tipo de Serviço'"
     :modal="true"
     :style="{ width: '90vw', maxWidth: '600px' }"
   >
@@ -45,11 +45,12 @@ import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import { useToast } from 'primevue/usetoast'
-import { createTypeService } from '@/services/typeServiceService'
+import { createTypeService, updateTypeService, getTypeServiceById } from '@/services/typeServiceService'
 
 // Props
 interface Props {
   show: boolean
+  typeServiceId?: number | null
 }
 
 const props = defineProps<Props>()
@@ -65,12 +66,19 @@ const visible = ref(props.show)
 const typeName = ref('')
 const loading = ref(false)
 const submitted = ref(false)
+const isEditing = ref(false)
 
 // Watchers
-watch(() => props.show, (newValue) => {
+watch(() => props.show, async (newValue) => {
   visible.value = newValue
   if (newValue) {
-    resetForm()
+    if (props.typeServiceId) {
+      isEditing.value = true
+      await loadTypeService(props.typeServiceId)
+    } else {
+      isEditing.value = false
+      resetForm()
+    }
   }
 })
 
@@ -83,6 +91,34 @@ const resetForm = () => {
   typeName.value = ''
   submitted.value = false
   loading.value = false
+  isEditing.value = false
+}
+
+const loadTypeService = async (id: number) => {
+  loading.value = true
+  try {
+    const response = await getTypeServiceById(id)
+
+    if (response.success && response.data) {
+      typeName.value = response.data.name
+    } else {
+      toast.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: response.error || 'Erro ao carregar tipo de serviço',
+        life: 3000
+      })
+    }
+  } catch (error: any) {
+    toast.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: error.message || 'Erro inesperado ao carregar tipo de serviço',
+      life: 3000
+    })
+  } finally {
+    loading.value = false
+  }
 }
 
 const handleCancel = () => {
@@ -100,13 +136,15 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
-    const response = await createTypeService(typeName.value.trim())
+    const response = isEditing.value && props.typeServiceId
+      ? await updateTypeService(props.typeServiceId, typeName.value.trim())
+      : await createTypeService(typeName.value.trim())
 
     if (response.success) {
       toast.add({
         severity: 'success',
         summary: 'Sucesso',
-        detail: 'Tipo de serviço criado com sucesso!',
+        detail: isEditing.value ? 'Tipo de serviço atualizado com sucesso!' : 'Tipo de serviço criado com sucesso!',
         life: 3000
       })
 
@@ -117,7 +155,7 @@ const handleSubmit = async () => {
       toast.add({
         severity: 'error',
         summary: 'Erro',
-        detail: response.error || 'Erro ao criar tipo de serviço',
+        detail: response.error || `Erro ao ${isEditing.value ? 'atualizar' : 'criar'} tipo de serviço`,
         life: 3000
       })
     }
@@ -125,7 +163,7 @@ const handleSubmit = async () => {
     toast.add({
       severity: 'error',
       summary: 'Erro',
-      detail: error.message || 'Erro inesperado ao criar tipo de serviço',
+      detail: error.message || `Erro inesperado ao ${isEditing.value ? 'atualizar' : 'criar'} tipo de serviço`,
       life: 3000
     })
   } finally {

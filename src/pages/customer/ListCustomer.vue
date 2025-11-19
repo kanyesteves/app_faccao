@@ -104,9 +104,11 @@ const loadCustomers = async () => {
   }
 }
 
+// Emits
+const emit = defineEmits(['edit'])
+
 const editCustomer = (id: number) => {
-  console.log('Editar cliente:', id)
-  // Função será implementada
+  emit('edit', id)
 }
 
 const deleteCustomer = async (id: number) => {
