@@ -26,6 +26,10 @@
               <span class="label">Data de Criação:</span>
               <span class="value">{{ customer.createdAt }}</span>
             </div>
+            <div v-if="customer.startClosingDate" class="info-row">
+              <span class="label">Início do Fechamento:</span>
+              <span class="value">Dia {{ customer.startClosingDate }}</span>
+            </div>
             <div v-if="customer.dayClose" class="info-row">
               <span class="label">Dia do Fechamento:</span>
               <span class="value">Dia {{ customer.dayClose }}</span>
@@ -81,6 +85,7 @@ const loadCustomers = async () => {
           id: customer.id,
           name: customer.name,
           dayClose: customer.date_close || null,
+          startClosingDate: customer.start_closing_date || null,
           createdAt: new Date(customer.created_at).toLocaleDateString('pt-BR')
         }
       })

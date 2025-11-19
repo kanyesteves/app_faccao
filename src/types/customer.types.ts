@@ -7,6 +7,7 @@ export interface Customer {
   name: string
   organization_id: string
   date_close?: string | null
+  start_closing_date?: string | null
   created_at?: string
 }
 
