@@ -22,7 +22,20 @@
         </div>
 
         <div class="form-field">
-          <label for="dayClose">Dia do Fechamento (opcional)</label>
+          <label for="startClosingDate">Início do Fechamento *</label>
+          <InputText
+            id="startClosingDate"
+            v-model="startClosingDate"
+            placeholder="Digite o dia (1-31)"
+            type="number"
+            min="1"
+            max="31"
+            required
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="dayClose">Dia do Fechamento *</label>
           <InputText
             id="dayClose"
             v-model="dayClose"
@@ -30,6 +43,7 @@
             type="number"
             min="1"
             max="31"
+            required
           />
         </div>
 
@@ -77,6 +91,7 @@ const toast = useToast()
 const visible = ref(props.show)
 const customerName = ref('')
 const dayClose = ref('')
+const startClosingDate = ref('')
 const loading = ref(false)
 const submitted = ref(false)
 const isEditing = ref(false)
@@ -103,6 +118,7 @@ watch(visible, (newValue) => {
 const resetForm = () => {
   customerName.value = ''
   dayClose.value = ''
+  startClosingDate.value = ''
   submitted.value = false
   loading.value = false
   isEditing.value = false
@@ -116,6 +132,7 @@ const loadCustomer = async (id: number) => {
     if (response.success && response.data) {
       customerName.value = response.data.name
       dayClose.value = response.data.date_close || ''
+      startClosingDate.value = response.data.start_closing_date || ''
     } else {
       toast.add({
         severity: 'error',
@@ -145,6 +162,32 @@ const handleSubmit = async () => {
   submitted.value = true
 
   if (!customerName.value.trim()) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Atenção',
+      detail: 'Por favor, preencha o nome do cliente',
+      life: 3000
+    })
+    return
+  }
+
+  if (!startClosingDate.value.trim()) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Atenção',
+      detail: 'Por favor, preencha o início do fechamento',
+      life: 3000
+    })
+    return
+  }
+
+  if (!dayClose.value.trim()) {
+    toast.add({
+      severity: 'warn',
+      summary: 'Atenção',
+      detail: 'Por favor, preencha o dia do fechamento',
+      life: 3000
+    })
     return
   }
 
@@ -153,7 +196,8 @@ const handleSubmit = async () => {
   try {
     const customerData = {
       name: customerName.value.trim(),
-      date_close: dayClose.value.trim() || null
+      date_close: dayClose.value.trim(),
+      start_closing_date: startClosingDate.value.trim()
     }
 
     const response = isEditing.value && props.customerId
@@ -217,6 +261,12 @@ const handleSubmit = async () => {
     .p-error {
       color: #e24c4c;
       font-size: 0.875rem;
+    }
+
+    .field-hint {
+      color: #6c757d;
+      font-size: 0.8rem;
+      font-style: italic;
     }
   }
 

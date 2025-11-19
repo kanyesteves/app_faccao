@@ -38,7 +38,7 @@ export const getDashboardMetrics = async () => {
       }
     }
 
-    const references = response.data
+    const references = response.data || []
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
@@ -46,9 +46,44 @@ export const getDashboardMetrics = async () => {
     const inProgress = references.filter((ref: any) => ref.status === 'Em Andamento')
     const referencesInProgress = inProgress.length
 
-    // 2. Valor em Produção
-    const valueInProduction = inProgress.reduce((sum: number, ref: any) => {
-      return sum + (ref.amount * ref.value)
+    // 2. Valor em Produção (Em Andamento + Concluídas no período de fechamento atual)
+    const valueInProduction = (references as any[]).reduce((sum: number, ref: any) => {
+      // Apenas processa referências que têm cliente com dados de fechamento
+      if (!ref.customer || !ref.customer.start_closing_date || !ref.customer.date_close) {
+        return sum
+      }
+
+      const startClosingDay = parseInt(ref.customer.start_closing_date)
+      const endClosingDay = parseInt(ref.customer.date_close)
+
+      // Valida se os dias são números válidos
+      if (isNaN(startClosingDay) || isNaN(endClosingDay)) {
+        return sum
+      }
+
+      const currentMonth = today.getMonth()
+      const currentYear = today.getFullYear()
+
+      // Data de início do período: dia definido pelo usuário no MÊS ATUAL
+      const periodStart = new Date(currentYear, currentMonth, startClosingDay)
+      periodStart.setHours(0, 0, 0, 0)
+
+      // Data de fim do período: dia de fechamento no PRÓXIMO MÊS
+      const periodEnd = new Date(currentYear, currentMonth + 1, endClosingDay)
+      periodEnd.setHours(23, 59, 59, 999)
+
+      // Verifica se a referência foi criada dentro do período de fechamento
+      const refCreatedDate = new Date(ref.created_at)
+      refCreatedDate.setHours(0, 0, 0, 0)
+
+      const isInPeriod = refCreatedDate >= periodStart && refCreatedDate <= periodEnd
+
+      // Inclui no cálculo se estiver no período E (Em Andamento OU Concluída)
+      if (isInPeriod && (ref.status === 'Em Andamento' || ref.status === 'Concluída')) {
+        return sum + (ref.amount * ref.value)
+      }
+
+      return sum
     }, 0)
 
     // 3. Referências Atrasadas

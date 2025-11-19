@@ -61,6 +61,7 @@ export const createCustomer = async (customer: Omit<Customer, 'id' | 'created_at
         {
           name: customer.name,
           date_close: customer.date_close || null,
+          start_closing_date: customer.start_closing_date || null,
           organization_id: organizationId
         }
       ])
@@ -174,7 +175,8 @@ export const updateCustomer = async (customerId: number, customer: Omit<Customer
       .from('customer')
       .update({
         name: customer.name,
-        date_close: customer.date_close || null
+        date_close: customer.date_close || null,
+        start_closing_date: customer.start_closing_date || null
       })
       .eq('id', customerId)
       .select()

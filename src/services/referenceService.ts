@@ -84,7 +84,7 @@ export const getReferencesByOrganization = async () => {
         *,
         type_service:service_id (id, name),
         lot:lot_id (id, number),
-        customer:customer_id (id, name)
+        customer:customer_id (id, name, date_close, start_closing_date)
       `)
       .eq('organization_id', organizationId)
       .order('created_at', { ascending: false })
