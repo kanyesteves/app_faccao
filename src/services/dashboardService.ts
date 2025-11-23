@@ -24,6 +24,50 @@ export interface DashboardMetrics {
 }
 
 /**
+ * Filtra referências pelo período de fechamento do cliente
+ * Retorna apenas referências que:
+ * - Têm cliente com dados de fechamento válidos
+ * - Foram criadas dentro do período de fechamento atual
+ * - Estão "Em Andamento" ou "Concluída"
+ */
+const filterByClosingPeriod = (references: any[], today: Date): any[] => {
+  const currentMonth = today.getMonth()
+  const currentYear = today.getFullYear()
+
+  return references.filter((ref: any) => {
+    // Sem cliente ou sem dados de fechamento = não inclui
+    if (!ref.customer?.start_closing_date || !ref.customer?.date_close) {
+      return false
+    }
+
+    const startClosingDay = parseInt(ref.customer.start_closing_date)
+    const endClosingDay = parseInt(ref.customer.date_close)
+
+    // Valida se os dias são números válidos
+    if (isNaN(startClosingDay) || isNaN(endClosingDay)) {
+      return false
+    }
+
+    // Data de início do período: dia definido pelo usuário no MÊS ATUAL
+    const periodStart = new Date(currentYear, currentMonth, startClosingDay)
+    periodStart.setHours(0, 0, 0, 0)
+
+    // Data de fim do período: dia de fechamento no PRÓXIMO MÊS
+    const periodEnd = new Date(currentYear, currentMonth + 1, endClosingDay)
+    periodEnd.setHours(23, 59, 59, 999)
+
+    // Verifica se a referência foi criada dentro do período de fechamento
+    const refCreatedDate = new Date(ref.created_at)
+    refCreatedDate.setHours(0, 0, 0, 0)
+
+    const isInPeriod = refCreatedDate >= periodStart && refCreatedDate <= periodEnd
+
+    // Inclui se estiver no período E (Em Andamento OU Concluída)
+    return isInPeriod && (ref.status === 'Em Andamento' || ref.status === 'Concluída')
+  })
+}
+
+/**
  * Busca todas as métricas do dashboard
  */
 export const getDashboardMetrics = async () => {
@@ -42,48 +86,16 @@ export const getDashboardMetrics = async () => {
     const today = new Date()
     today.setHours(0, 0, 0, 0)
 
-    // 1. Referências em Andamento
+    // 1. Referências em Andamento (total, sem filtro de período)
     const inProgress = references.filter((ref: any) => ref.status === 'Em Andamento')
     const referencesInProgress = inProgress.length
 
-    // 2. Valor em Produção (Em Andamento + Concluídas no período de fechamento atual)
-    const valueInProduction = (references as any[]).reduce((sum: number, ref: any) => {
-      // Apenas processa referências que têm cliente com dados de fechamento
-      if (!ref.customer || !ref.customer.start_closing_date || !ref.customer.date_close) {
-        return sum
-      }
+    // 2. Referências no período de fechamento atual (reutilizado em múltiplas métricas)
+    const refsInPeriod = filterByClosingPeriod(references, today)
 
-      const startClosingDay = parseInt(ref.customer.start_closing_date)
-      const endClosingDay = parseInt(ref.customer.date_close)
-
-      // Valida se os dias são números válidos
-      if (isNaN(startClosingDay) || isNaN(endClosingDay)) {
-        return sum
-      }
-
-      const currentMonth = today.getMonth()
-      const currentYear = today.getFullYear()
-
-      // Data de início do período: dia definido pelo usuário no MÊS ATUAL
-      const periodStart = new Date(currentYear, currentMonth, startClosingDay)
-      periodStart.setHours(0, 0, 0, 0)
-
-      // Data de fim do período: dia de fechamento no PRÓXIMO MÊS
-      const periodEnd = new Date(currentYear, currentMonth + 1, endClosingDay)
-      periodEnd.setHours(23, 59, 59, 999)
-
-      // Verifica se a referência foi criada dentro do período de fechamento
-      const refCreatedDate = new Date(ref.created_at)
-      refCreatedDate.setHours(0, 0, 0, 0)
-
-      const isInPeriod = refCreatedDate >= periodStart && refCreatedDate <= periodEnd
-
-      // Inclui no cálculo se estiver no período E (Em Andamento OU Concluída)
-      if (isInPeriod && (ref.status === 'Em Andamento' || ref.status === 'Concluída')) {
-        return sum + (ref.amount * ref.value)
-      }
-
-      return sum
+    // 3. Valor em Produção (soma dos valores no período)
+    const valueInProduction = refsInPeriod.reduce((sum: number, ref: any) => {
+      return sum + (ref.amount * ref.value)
     }, 0)
 
     // 3. Referências Atrasadas
@@ -113,9 +125,9 @@ export const getDashboardMetrics = async () => {
       data: Object.values(statusCount)
     }
 
-    // 6. Faturamento por Cliente (Top 5)
+    // 6. Faturamento por Cliente (Top 5) - usa referências do período
     const customerRevenue: any = {}
-    inProgress.forEach((ref: any) => {
+    refsInPeriod.forEach((ref: any) => {
       const customerName = ref.customer?.name || 'Sem Cliente'
       const value = ref.amount * ref.value
       customerRevenue[customerName] = (customerRevenue[customerName] || 0) + value
@@ -128,9 +140,9 @@ export const getDashboardMetrics = async () => {
       data: sortedCustomers.map(([, value]) => value)
     }
 
-    // 7. Produção por Tipo de Serviço
+    // 7. Produção por Tipo de Serviço - usa referências do período
     const serviceTypeProduction: any = {}
-    inProgress.forEach((ref: any) => {
+    refsInPeriod.forEach((ref: any) => {
       const serviceName = ref.type_service?.name || 'Sem Tipo'
       const amount = ref.amount
       serviceTypeProduction[serviceName] = (serviceTypeProduction[serviceName] || 0) + amount

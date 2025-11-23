@@ -1,10 +1,17 @@
-# App Facção
+# Noro App
 
 Sistema para gerenciamento de produção de costureiras autônomas e faccionistas.
 
+![Vue.js](https://img.shields.io/badge/Vue.js-3.2-4FC08D?logo=vue.js)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?logo=typescript)
+![Supabase](https://img.shields.io/badge/Supabase-Backend-3ECF8E?logo=supabase)
+![PWA](https://img.shields.io/badge/PWA-Enabled-5A0FC8?logo=pwa)
+
 ## 📋 Sobre o Projeto
 
-O App Facção é uma solução desenvolvida para auxiliar costureiras autônomas e faccionistas a gerenciar suas produções de forma simples e eficiente. O projeto está sendo desenvolvido como MVP (Minimum Viable Product) utilizando tecnologias modernas e focando na agilidade de desenvolvimento.
+O Noro App é uma solução desenvolvida para auxiliar costureiras autônomas e faccionistas a gerenciar suas produções de forma simples e eficiente. O projeto está sendo desenvolvido como MVP (Minimum Viable Product) utilizando tecnologias modernas e focando na agilidade de desenvolvimento.
+
+O aplicativo é uma **PWA (Progressive Web App)**, podendo ser instalado em dispositivos móveis e funcionar offline.
 
 ## 🚀 Tecnologias Utilizadas
 
@@ -15,6 +22,7 @@ O App Facção é uma solução desenvolvida para auxiliar costureiras autônoma
 - **[Pinia](https://pinia.vuejs.org/)** - Store de gerenciamento de estado para Vue
 - **[PrimeVue 4](https://primevue.org/)** - Biblioteca de componentes UI ricos
 - **[Tailwind CSS](https://tailwindcss.com/)** - Framework CSS utilitário (via tailwindcss-primeui)
+- **[Chart.js](https://www.chartjs.org/)** - Gráficos interativos para o Dashboard
 - **[Axios](https://axios-http.com/)** - Cliente HTTP baseado em Promise
 - **[Vuelidate](https://vuelidate-next.netlify.app/)** - Validação de formulários para Vue
 
@@ -24,6 +32,11 @@ O App Facção é uma solução desenvolvida para auxiliar costureiras autônoma
   - Authentication
   - Real-time subscriptions
   - Storage
+
+### PWA
+- **@vue/cli-plugin-pwa** - Plugin PWA para Vue CLI
+- **Workbox** - Caching e suporte offline
+- **Service Worker** - Funcionamento offline e instalação em dispositivos
 
 ## 🏗️ Arquitetura
 
@@ -46,19 +59,23 @@ O projeto segue uma arquitetura **multi-tenant**, onde:
 
 ```
 app_faccao/
-├── public/                  # Arquivos estáticos
-│   └── index.html
+├── public/                  # Arquivos estáticos (PWA)
+│   ├── index.html
+│   ├── manifest.json        # Manifest PWA
+│   └── img/icons/           # Ícones PWA (192x192, 512x512, maskable)
 ├── src/
-│   ├── assets/              # Imagens, fontes, etc
+│   ├── assets/              # Imagens, fontes, logo
 │   ├── composables/         # Composables Vue (lógica reutilizável)
 │   │   └── useAuth.ts       # Composable de autenticação
 │   ├── global/              # Configurações e componentes globais
-│   │   └── components/      # Componentes globais
-│   │       └── NavbarMenu.vue
+│   │   ├── components/      # Componentes globais
+│   │   │   └── NavbarMenu.vue
+│   │   └── supabase.ts      # Configuração global Supabase
 │   ├── pages/               # Páginas específicas de features
 │   │   ├── customer/        # Páginas de clientes
 │   │   │   ├── ListCustomer.vue
-│   │   │   └── SaveCustomer.vue
+│   │   │   ├── SaveCustomer.vue
+│   │   │   └── RemoveCustomer.vue
 │   │   ├── lot/             # Páginas de lotes
 │   │   │   ├── ListLot.vue
 │   │   │   ├── SaveLot.vue
@@ -76,6 +93,7 @@ app_faccao/
 │   │   ├── supabaseClient.ts      # Cliente Supabase configurado
 │   │   ├── authService.ts         # Serviço de autenticação
 │   │   ├── customerService.ts     # Serviço de clientes
+│   │   ├── dashboardService.ts    # Serviço de métricas do dashboard
 │   │   ├── lotService.ts          # Serviço de lotes
 │   │   ├── organizationService.ts # Serviço de organização
 │   │   ├── referenceService.ts    # Serviço de referências
@@ -88,15 +106,17 @@ app_faccao/
 │   │   ├── organization.types.ts # Tipos de organização
 │   │   └── reference.types.ts    # Tipos de referências
 │   ├── views/               # Views principais da aplicação
-│   │   ├── HomeView.vue
+│   │   ├── HomeView.vue          # Dashboard com métricas e gráficos
 │   │   ├── LoginView.vue
 │   │   ├── LotView.vue
 │   │   ├── CustomerView.vue
 │   │   ├── ReferenceView.vue
 │   │   ├── TypeServiceView.vue
-│   │   └── OrganizationView.vue
+│   │   ├── OrganizationView.vue
+│   │   └── UserView.vue
 │   ├── App.vue              # Componente raiz
 │   ├── main.ts              # Entry point
+│   ├── registerServiceWorker.ts  # Service Worker PWA
 │   └── shims-vue.d.ts       # Declarações TypeScript
 ├── .env                     # Variáveis de ambiente (não versionado)
 ├── .gitignore
@@ -104,7 +124,7 @@ app_faccao/
 ├── CLAUDE.md                # Instruções para o Claude
 ├── package.json
 ├── tsconfig.json
-├── vue.config.js
+├── vue.config.js            # Configuração Vue CLI + PWA
 └── tailwind.config.js
 ```
 
@@ -174,27 +194,53 @@ Em desenvolvimento - MVP
 
 ## ✅ Features Implementadas
 
+### Autenticação
 - [x] **Autenticação com Supabase** - Sistema completo de login/logout
 - [x] **Persistência de sessão** - Sessão mantida após F5/reload da página
-- [x] **Navbar global** - Menu de navegação responsivo com Avatar do usuário
-- [x] **CRUD de Lotes** - Criar, listar, editar e remover lotes de produção
-- [x] **CRUD de Clientes** - Criar, listar, editar e remover clientes com dia de fechamento
-- [x] **CRUD de Tipos de Serviço** - Criar, listar, editar e remover tipos de serviços
-- [x] **CRUD de Referências** - Criar, listar, editar e remover referências com relacionamentos (cliente, lote, tipo de serviço)
-- [x] **Tela de Organização** - Visualizar e editar informações da organização (nome, email, CNPJ, plano)
+- [x] **Auto-refresh de token** - Tokens de acesso renovados automaticamente
 - [x] **Proteção de rotas** - Sistema de guards assíncronos para rotas protegidas
 - [x] **Gerenciamento de estado** - Pinia store para autenticação
-- [x] **Design responsivo** - Interface adaptada para desktop e mobile com cards limitados em monitores grandes
+
+### Dashboard
+- [x] **Métricas em cards** - Referências em andamento, valor em produção, atrasadas e concluídas
+- [x] **Gráfico de Pizza** - Referências por status
+- [x] **Gráfico de Barras** - Top 5 clientes por valor
+- [x] **Gráfico de Barras** - Produção por tipo de serviço
+- [x] **Cálculo por período de fechamento** - Valor em produção calculado por cliente
+
+### CRUDs Completos
+- [x] **CRUD de Lotes** - Criar, listar, editar e remover lotes de produção
+- [x] **CRUD de Clientes** - Criar, listar, editar e remover clientes (com início e dia de fechamento)
+- [x] **CRUD de Tipos de Serviço** - Criar, listar, editar e remover tipos de serviços
+- [x] **CRUD de Referências** - Criar, listar, editar e remover referências com:
+  - Relacionamentos (cliente, lote, tipo de serviço)
+  - Status (Em Andamento, Concluída, Cancelada) com tags coloridas
+  - Campos: código, nome, cor, tamanho, quantidade, valor unitário/total, datas
+
+### Interface
+- [x] **Navbar global** - Menu de navegação lateral (Drawer) com Avatar do usuário
+- [x] **Tela de Organização** - Visualizar e editar informações (nome, email, CNPJ, plano)
+- [x] **Design responsivo** - Interface adaptada para desktop e mobile
+- [x] **Toast notifications** - Feedback visual para ações do usuário
+- [x] **Estados vazios** - Mensagens orientativas quando não há dados
+
+### PWA (Progressive Web App)
+- [x] **Service Worker** - Funcionamento offline com Workbox
+- [x] **Manifest configurado** - Instalável em dispositivos móveis
+- [x] **Ícones PWA** - Ícones para Android/iOS (192x192, 512x512, maskable)
+- [x] **Cache inteligente** - NetworkFirst para requisições Supabase (24h)
+- [x] **Logo oficial** - Noro App com identidade visual
+
+### Arquitetura
 - [x] **Sistema multi-tenant** - Isolamento completo de dados por organização
 
 ## 📝 Próximas Features
 
-- [ ] Funcionalidade de edição em todos os CRUDs (atualmente só possui criação, listagem e remoção)
-- [ ] Dashboard com métricas e indicadores de produção
 - [ ] Sistema de relatórios
 - [ ] Gestão de usuários da organização (multi-usuários por tenant)
 - [ ] Filtros e busca nas listagens
 - [ ] Paginação para grandes volumes de dados
+- [ ] Registro de novos usuários
 
 ## 👨‍💻 Autor
 
