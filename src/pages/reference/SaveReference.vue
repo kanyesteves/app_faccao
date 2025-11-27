@@ -49,16 +49,45 @@
             </small>
           </div>
 
-          <div class="form-field">
-            <label for="referenceSize">Tamanho</label>
-            <InputText
-              id="referenceSize"
-              v-model="formData.size"
-              placeholder="Digite o tamanho"
-              :class="{ 'p-invalid': submitted && !formData.size }"
+          <div class="form-field sizes-field">
+            <label>Tamanhos</label>
+            <div class="sizes-container">
+              <div v-for="(sizeItem, index) in sizes" :key="index" class="size-row">
+                <InputText
+                  v-model="sizeItem.name"
+                  placeholder="ex: P, M, G"
+                  :class="{ 'p-invalid': submitted && !sizeItem.name }"
+                  class="size-name-input"
+                />
+                <InputText
+                  v-model.number="sizeItem.quantity"
+                  placeholder="Quantidade"
+                  type="number"
+                  min="1"
+                  :class="{ 'p-invalid': submitted && !sizeItem.quantity }"
+                  class="size-quantity-input"
+                  @input="updateTotalAmount"
+                />
+                <Button
+                  icon="pi pi-trash"
+                  severity="danger"
+                  text
+                  @click="removeSize(index)"
+                  type="button"
+                  :disabled="sizes.length === 1"
+                />
+              </div>
+            </div>
+            <Button
+              label="Adicionar Tamanho"
+              icon="pi pi-plus"
+              severity="secondary"
+              @click="addSize"
+              type="button"
+              class="add-size-btn"
             />
-            <small v-if="submitted && !formData.size" class="p-error">
-              Tamanho é obrigatório
+            <small v-if="submitted && sizes.some(s => !s.name || !s.quantity)" class="p-error">
+              Todos os tamanhos devem ter nome e quantidade preenchidos
             </small>
           </div>
         </div>
@@ -209,6 +238,7 @@ import { createReference, updateReference, getReferenceById } from '@/services/r
 import { getCustomersByOrganization } from '@/services/customerService'
 import { getLotsByOrganization } from '@/services/lotService'
 import { getTypeServicesByOrganization } from '@/services/typeServiceService'
+import type { SizeItem } from '@/types/reference.types'
 
 // Props
 interface Props {
@@ -246,6 +276,8 @@ const formData = ref({
   lot_id: null as number | null,
   customer_id: null as number | null
 })
+
+const sizes = ref<SizeItem[]>([{ name: '', quantity: 0 }])
 
 const customers = ref<any[]>([])
 const lots = ref<any[]>([])
@@ -327,9 +359,28 @@ const resetForm = () => {
     lot_id: null,
     customer_id: null
   }
+  sizes.value = [{ name: '', quantity: 0 }]
   submitted.value = false
   loading.value = false
   isEditing.value = false
+}
+
+const addSize = () => {
+  sizes.value.push({ name: '', quantity: 0 })
+}
+
+const removeSize = (index: number) => {
+  if (sizes.value.length > 1) {
+    sizes.value.splice(index, 1)
+    updateTotalAmount()
+  }
+}
+
+const updateTotalAmount = () => {
+  const total = sizes.value.reduce((sum, sizeItem) => {
+    return sum + (sizeItem.quantity || 0)
+  }, 0)
+  formData.value.amount = total > 0 ? total : null
 }
 
 const loadReference = async (id: number) => {
@@ -350,6 +401,18 @@ const loadReference = async (id: number) => {
         service_id: response.data.service_id,
         lot_id: response.data.lot_id,
         customer_id: response.data.customer_id
+      }
+
+      // Converter JSON string para array de tamanhos
+      try {
+        const sizesObj = JSON.parse(response.data.size)
+        sizes.value = Object.entries(sizesObj).map(([name, quantity]) => ({
+          name,
+          quantity: quantity as number
+        }))
+      } catch (e) {
+        // Se não for JSON válido, inicializa com valor vazio
+        sizes.value = [{ name: '', quantity: 0 }]
       }
     } else {
       toast.add({
@@ -380,11 +443,13 @@ const handleSubmit = async () => {
   submitted.value = true
 
   // Validação
+  const hasSizesError = sizes.value.some(s => !s.name.trim() || !s.quantity || s.quantity <= 0)
+
   if (
     !formData.value.code.trim() ||
     !formData.value.name.trim() ||
     !formData.value.color.trim() ||
-    !formData.value.size.trim() ||
+    hasSizesError ||
     !formData.value.status.trim() ||
     !formData.value.amount ||
     !formData.value.value ||
@@ -399,6 +464,14 @@ const handleSubmit = async () => {
   loading.value = true
 
   try {
+    // Converter array de tamanhos para objeto JSON
+    const sizesObj: Record<string, number> = {}
+    sizes.value.forEach(sizeItem => {
+      if (sizeItem.name.trim()) {
+        sizesObj[sizeItem.name.trim()] = sizeItem.quantity
+      }
+    })
+
     const referenceData = {
       code: formData.value.code.trim(),
       name: formData.value.name.trim(),
@@ -406,7 +479,7 @@ const handleSubmit = async () => {
       amount: formData.value.amount,
       value: formData.value.value,
       estimated_date: formData.value.estimated_date.toISOString().split('T')[0],
-      size: formData.value.size.trim(),
+      size: JSON.stringify(sizesObj), // Converter para JSON string
       status: formData.value.status.trim(),
       service_id: formData.value.service_id,
       lot_id: formData.value.lot_id,
@@ -502,6 +575,36 @@ const handleSubmit = async () => {
       button {
         width: 100%;
       }
+    }
+  }
+
+  .sizes-field {
+    .sizes-container {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .size-row {
+      display: grid;
+      grid-template-columns: 2fr 1.5fr auto;
+      gap: 0.5rem;
+      align-items: center;
+
+      @media (max-width: 768px) {
+        grid-template-columns: 1fr 1fr auto;
+      }
+    }
+
+    .size-name-input,
+    .size-quantity-input {
+      width: 100%;
+    }
+
+    .add-size-btn {
+      width: 100%;
+      margin-top: 0.5rem;
     }
   }
 }
