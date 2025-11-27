@@ -10,7 +10,7 @@ export interface Reference {
   amount: number
   value: number
   estimated_date: string
-  size: string
+  size: string // JSON stringificado: '{"P": 10, "M": 20}'
   status: string
   service_id: number
   lot_id: number
@@ -23,4 +23,10 @@ export interface ReferenceResponse {
   success: boolean
   error?: string
   data?: Reference | Reference[]
+}
+
+// Interface auxiliar para trabalhar com tamanhos no formulário
+export interface SizeItem {
+  name: string
+  quantity: number
 }

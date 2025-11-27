@@ -41,7 +41,7 @@
             </div>
             <div class="info-row">
               <span class="label">Tamanho:</span>
-              <span class="value">{{ reference.size }}</span>
+              <span class="value" v-html="reference.size"></span>
             </div>
             <div class="info-row">
               <span class="label">Quantidade:</span>
@@ -112,6 +112,18 @@ const formatCurrency = (value: number) => {
   }).format(value)
 }
 
+const formatSizes = (sizeJson: string): string => {
+  try {
+    const sizesObj = JSON.parse(sizeJson)
+    return Object.entries(sizesObj)
+      .map(([name, quantity]) => `<strong>${name}</strong>: ${quantity}`)
+      .join(' - ')
+  } catch (e) {
+    // Se não for JSON válido, retorna o valor original
+    return sizeJson
+  }
+}
+
 const loadReferences = async () => {
   loading.value = true
 
@@ -129,7 +141,7 @@ const loadReferences = async () => {
           amount: reference.amount,
           value: reference.value,
           totalValue: totalValue,
-          size: reference.size,
+          size: formatSizes(reference.size),
           status: reference.status || 'Em Andamento',
           estimatedDate: new Date(reference.estimated_date).toLocaleDateString('pt-BR'),
           createdAt: new Date(reference.created_at).toLocaleDateString('pt-BR'),
