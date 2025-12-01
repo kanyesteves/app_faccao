@@ -31,6 +31,7 @@ export interface DashboardMetrics {
  * - Estão "Em Andamento" ou "Concluída"
  */
 const filterByClosingPeriod = (references: any[], today: Date): any[] => {
+  const currentDay = today.getDate()
   const currentMonth = today.getMonth()
   const currentYear = today.getFullYear()
 
@@ -48,12 +49,26 @@ const filterByClosingPeriod = (references: any[], today: Date): any[] => {
       return false
     }
 
-    // Data de início do período: dia definido pelo usuário no MÊS ATUAL
-    const periodStart = new Date(currentYear, currentMonth, startClosingDay)
-    periodStart.setHours(0, 0, 0, 0)
+    // Determina o período de fechamento baseado na data atual
+    let periodStart: Date
+    let periodEnd: Date
 
-    // Data de fim do período: dia de fechamento no PRÓXIMO MÊS
-    const periodEnd = new Date(currentYear, currentMonth + 1, endClosingDay)
+    // Se hoje está ANTES do dia de início do fechamento
+    // O período atual é do mês ANTERIOR até o mês ATUAL
+    // Exemplo: Fechamento 10-10, hoje é 05/12 -> período é 10/11 a 10/12
+    if (currentDay < startClosingDay) {
+      periodStart = new Date(currentYear, currentMonth - 1, startClosingDay)
+      periodEnd = new Date(currentYear, currentMonth, endClosingDay)
+    }
+    // Se hoje está APÓS ou IGUAL ao dia de início do fechamento
+    // O período atual é do mês ATUAL até o PRÓXIMO mês
+    // Exemplo: Fechamento 10-10, hoje é 15/12 -> período é 10/12 a 10/01
+    else {
+      periodStart = new Date(currentYear, currentMonth, startClosingDay)
+      periodEnd = new Date(currentYear, currentMonth + 1, endClosingDay)
+    }
+
+    periodStart.setHours(0, 0, 0, 0)
     periodEnd.setHours(23, 59, 59, 999)
 
     // Verifica se a referência foi criada dentro do período de fechamento
